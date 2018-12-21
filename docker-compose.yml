@@ -1,0 +1,41 @@
+version: '3.3'
+
+services:
+
+  rabbit:
+    image: rabbitmq
+    hostname: rabbit
+    deploy:
+      replicas: 1
+
+  rds:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+      - MYSQL_DATABASE=trak
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    deploy:
+      replicas: 1
+
+  adminer:
+    image: adminer
+    restart: always
+    deploy:
+      replicas: 1
+    ports:
+      - 8089:8080
+
+  engine:
+    build: engine/
+    image: ben/trak_engine:tag
+    restart: always
+    deploy:
+      replicas: 1
+
+  worker:
+    build: worker/
+    image: ben/trak_worker:tag
+    restart: always
+    deploy:
+      replicas: 2
