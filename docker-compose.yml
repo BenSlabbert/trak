@@ -28,14 +28,14 @@ services:
 
   engine:
     build: engine/
-    image: ben/trak_engine:tag
+    image: trak/trak_engine:tag
     restart: always
     deploy:
       replicas: 1
 
   worker:
     build: worker/
-    image: ben/trak_worker:tag
+    image: trak/trak_worker:tag
     restart: always
     deploy:
       replicas: 2
