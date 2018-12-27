@@ -1,9 +1,6 @@
 package com.trak.entity.jpa;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,7 +10,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Data
+@Getter
+@Setter
 public class Seller extends TimestampEntity implements Serializable {
 
   private static final long serialVersionUID = -8706806958759859385L;
