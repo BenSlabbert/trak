@@ -4,5 +4,4 @@ jdk:
   - openjdk11
 
 script:
-  # other script steps might be done before running the actual analysis
-  - mvn sonar:sonar   -Dsonar.projectKey=BenSlabbert_trak   -Dsonar.organization=benslabbert-github   -Dsonar.host.url=https://sonarcloud.io  -Dsonar.login=$SONAR_TOKEN
+  - mvn clean install sonar:sonar -Dsonar.projectKey=BenSlabbert_trak -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
