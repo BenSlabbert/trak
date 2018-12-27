@@ -17,3 +17,5 @@ This project was inspired by the site: [camelcamelcamel](https://camelcamelcamel
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=BenSlabbert_trak&metric=alert_status)](https://sonarcloud.io/dashboard?id=BenSlabbert_trak)
 
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=BenSlabbert_trak&metric=coverage)](https://sonarcloud.io/dashboard?id=BenSlabbert_trak)
+
+[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=BenSlabbert_trak&metric=sqale_rating)](https://sonarcloud.io/api/project_badges/measure?project=BenSlabbert_trak&metric=sqale_rating)
