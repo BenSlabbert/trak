@@ -4,6 +4,6 @@ jdk:
   - openjdk11
 addons:
   sonarcloud:
-    organization: "BenSlabbert_trak"
+    organization: "benslabbert-github"
 script:
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
