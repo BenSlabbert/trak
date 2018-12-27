@@ -8,4 +8,12 @@ This project was inspired by the site: [camelcamelcamel](https://camelcamelcamel
 
 ## Builds
 
+[Travis-CI](https://travis-ci.org/BenSlabbert/trak)
+
 [![Build Status](https://travis-ci.org/BenSlabbert/trak.svg?branch=master)](https://travis-ci.org/BenSlabbert/trak)
+
+[SonarQube](https://sonarcloud.io/dashboard?id=BenSlabbert_trak)
+
+[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=BenSlabbert_trak&metric=alert_status)](https://sonarcloud.io/dashboard?id=BenSlabbert_trak)
+
+[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=BenSlabbert_trak&metric=coverage)](https://sonarcloud.io/dashboard?id=BenSlabbert_trak)
