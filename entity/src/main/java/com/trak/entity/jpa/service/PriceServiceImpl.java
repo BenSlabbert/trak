@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.OptimisticLockException;
 import java.util.List;
 
 @Slf4j
@@ -21,7 +22,13 @@ public class PriceServiceImpl implements PriceService {
 
   @Override
   public Price save(Price price) {
-    return repo.saveAndFlush(price);
+
+    try {
+      return repo.saveAndFlush(price);
+    } catch (OptimisticLockException e) {
+      log.warn("OptimisticLockException while saving price!", e);
+      return save(price);
+    }
   }
 
   @Override

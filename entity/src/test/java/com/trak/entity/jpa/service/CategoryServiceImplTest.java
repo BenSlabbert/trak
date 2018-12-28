@@ -1,39 +1,44 @@
 package com.trak.entity.jpa.service;
 
+import com.trak.entity.config.JPATestConfig;
 import com.trak.entity.jpa.Category;
 import com.trak.entity.jpa.repo.CategoryRepo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
+import static com.trak.entity.config.Profiles.JPA_TEST_POFILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 
-@RunWith(SpringRunner.class)
+@Transactional
+@RunWith(SpringJUnit4ClassRunner.class)
+@ActiveProfiles(profiles = JPA_TEST_POFILE)
+@ContextConfiguration(classes = JPATestConfig.class)
 public class CategoryServiceImplTest {
 
-  @MockBean private CategoryRepo repo;
+  @Autowired private CategoryRepo repo;
 
   private CategoryService service;
 
   @Before
   public void setUp() {
+
     service = new CategoryServiceImpl(repo);
+
+    repo.saveAndFlush(Category.builder().name("CAT").build());
   }
 
   @Test
   public void createCategoriesTest() {
-
-    given(repo.findByNameEquals("cat".toUpperCase()))
-        .willReturn(Optional.of(Category.builder().name("CAT").build()));
 
     List<Category> categories = service.createCategories(Collections.singletonList("cat"));
 
@@ -46,9 +51,6 @@ public class CategoryServiceImplTest {
   @Test
   public void createCategoryTest_alreadyExists() {
 
-    given(repo.findByNameEquals("cat".toUpperCase()))
-        .willReturn(Optional.of(Category.builder().name("CAT").build()));
-
     Category cat = service.createCategory("cat");
 
     assertNotNull(cat);
@@ -57,9 +59,6 @@ public class CategoryServiceImplTest {
 
   @Test
   public void createCategoryTest_create() {
-
-    given(repo.findByNameEquals("cat".toUpperCase())).willReturn(Optional.empty());
-    given(repo.saveAndFlush(any())).willReturn(Category.builder().name("CAT").build());
 
     Category cat = service.createCategory("cat");
 

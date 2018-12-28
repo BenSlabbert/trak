@@ -9,16 +9,16 @@ import com.trak.entity.rabbit.event.ProductEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
 @Component
-public class CreateCrawlerJob {
+public class CreateCrawlerJob implements Runnable {
 
   private final RabbitTemplate rabbitTemplate;
   private final CrawlerService crawlerService;
@@ -37,33 +37,34 @@ public class CreateCrawlerJob {
     this.queue = queue;
   }
 
-  @Transactional
+  @Async
+  @Override
   @Scheduled(initialDelay = 0L, fixedDelay = 1000L)
-  public void job() {
-
-    String requestId = UUID.randomUUID().toString();
-
-    log.info("{}: Creating event", requestId);
+  public void run() {
 
     for (Seller seller : sellerService.findAll()) {
 
       Optional<Crawler> crawler = crawlerService.findBySeller(seller);
 
-      if (crawler.isEmpty()) {
-        log.warn("{}: No crawler for sellerId: {}", requestId, seller.getId());
-        return;
+      if (crawler.isPresent()) {
+
+        String requestId = UUID.randomUUID().toString();
+
+        log.info("{}: Creating event", requestId);
+
+        long lastProductId = crawler.get().getLastId();
+
+        ProductEvent productEvent =
+            CreateProductEventFactory.createProductEvent(requestId, seller, lastProductId);
+
+        crawler.get().setLastId(++lastProductId);
+
+        crawlerService.save(crawler.get());
+
+        rabbitTemplate.convertAndSend(queue.getName(), productEvent);
+      } else {
+        log.warn("No crawler for sellerId: {}", seller.getId());
       }
-
-      Long lastProductId = crawler.get().getLastId();
-
-      ProductEvent productEvent =
-          CreateProductEventFactory.createProductEvent(requestId, seller, lastProductId);
-
-      crawler.get().setLastId(++lastProductId);
-
-      crawlerService.save(crawler.get());
-
-      rabbitTemplate.convertAndSend(queue.getName(), productEvent);
     }
   }
 }

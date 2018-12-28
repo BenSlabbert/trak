@@ -5,11 +5,8 @@ import com.trak.entity.jpa.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
-
 @Slf4j
 @Component
-@Transactional
 public class PriceUpdateJob {
 
   private final ProductService productService;

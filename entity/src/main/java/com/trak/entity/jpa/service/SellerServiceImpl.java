@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.OptimisticLockException;
 import java.util.Optional;
 
 @Slf4j
@@ -21,7 +22,13 @@ public class SellerServiceImpl implements SellerService {
 
   @Override
   public Seller save(Seller seller) {
-    return repo.saveAndFlush(seller);
+
+    try {
+      return repo.saveAndFlush(seller);
+    } catch (OptimisticLockException e) {
+      log.warn("OptimisticLockException while saving seller!", e);
+      return save(seller);
+    }
   }
 
   @Override

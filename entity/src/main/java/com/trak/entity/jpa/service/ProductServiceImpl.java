@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.OptimisticLockException;
+
 @Slf4j
 @Service
 @Transactional
@@ -20,7 +22,13 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product save(Product product) {
-    return repo.saveAndFlush(product);
+
+    try {
+      return repo.saveAndFlush(product);
+    } catch (OptimisticLockException e) {
+      log.warn("OptimisticLockException while saving product!", e);
+      return save(product);
+    }
   }
 
   @Override
