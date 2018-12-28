@@ -22,6 +22,13 @@ public class BrandServiceImpl implements BrandService {
 
   @Override
   public Brand save(Brand brand) {
+
+    if (brand.getName() != null) {
+      brand.setName(brand.getName().toUpperCase());
+    } else {
+      brand.setName("Unknown".toUpperCase());
+    }
+
     return repo.saveAndFlush(brand);
   }
 
@@ -29,22 +36,22 @@ public class BrandServiceImpl implements BrandService {
   public Brand findByNameEquals(String name) {
 
     if (name == null) {
-      return repo.findByNameEquals("Unknown").get();
+      // see liquibase.sql
+      return findByNameEquals("Unknown");
     }
 
     name = name.replaceAll("  ", " ").trim().toUpperCase();
 
     Optional<Brand> brand = repo.findByNameEquals(name);
 
-    if (brand.isEmpty()) {
-
-      try {
-        return repo.saveAndFlush(Brand.builder().name(name).build());
-      } catch (OptimisticLockException e) {
-        log.warn("OptimisticLockException, retrying ...", e);
-      }
+    if (brand.isPresent()) {
+      return brand.get();
     }
 
-    return brand.get();
+    try {
+      return repo.saveAndFlush(Brand.builder().name(name).build());
+    } catch (OptimisticLockException e) {
+      return findByNameEquals(name);
+    }
   }
 }
