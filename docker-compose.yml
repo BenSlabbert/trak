@@ -5,37 +5,64 @@ services:
   rabbit:
     image: rabbitmq
     hostname: rabbit
-    deploy:
-      replicas: 1
+    restart: always
 
   rds:
     image: mariadb
+    restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=my-secret-pw
       - MYSQL_DATABASE=trak
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
-    deploy:
-      replicas: 1
 
   adminer:
     image: adminer
     restart: always
-    deploy:
-      replicas: 1
     ports:
       - 8089:8080
 
   engine:
     build: engine/
-    image: trak/trak_engine:tag
+    image: benjaminslabbert/trak_engine:0.0.0
     restart: always
-    deploy:
-      replicas: 1
 
   worker:
     build: worker/
-    image: trak/trak_worker:tag
+    image: benjaminslabbert/trak_worker:0.0.0
     restart: always
-    deploy:
-      replicas: 2
+
+  search:
+    build: search/
+    image: benjaminslabbert/trak_search:0.0.0
+    restart: always
+    ports:
+      - 8081:8080
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+    restart: always
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - "discovery.type=single-node"
+      - "transport.host=es"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.4.1
+    restart: always
+    ports:
+      - 5601:5601
+    environment:
+      SERVER_NAME: kibana.local
+      ELASTICSEARCH_URL: http://es:9200
+
+  logstash:
+    build: ./logstash-conf/
+    image: benjaminslabbert/trak_logstash:0.0.0
+    ports:
+      - 9600:9600
+    restart: always
+
+# todo add trak-ui container

@@ -5,7 +5,7 @@ import com.trak.entity.jpa.service.BrandService;
 import com.trak.entity.jpa.service.CategoryService;
 import com.trak.entity.jpa.service.PriceService;
 import com.trak.entity.jpa.service.ProductService;
-import com.trak.entity.rabbit.event.ProductEvent;
+import com.trak.entity.rabbit.event.CrawlerEvent;
 import com.trak.worker.response.ProductResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -23,14 +23,14 @@ import static com.trak.entity.rabbit.Queue.CRAWLER_QUEUE;
 @Slf4j
 @Component
 @RabbitListener(queues = CRAWLER_QUEUE, containerFactory = "customRabbitListenerContainerFactory")
-public class CrawlerListener extends ProductRequest {
+public class CrawlerEventListener extends ProductRequest {
 
   private final CategoryService categoryService;
   private final ProductService productService;
   private final PriceService priceService;
   private final BrandService brandService;
 
-  public CrawlerListener(
+  public CrawlerEventListener(
       CategoryService categoryService,
       ProductService productService,
       PriceService priceService,
@@ -44,12 +44,12 @@ public class CrawlerListener extends ProductRequest {
 
   @RabbitHandler
   @Transactional
-  public void receive(ProductEvent productEvent) {
+  public void receive(CrawlerEvent crawlerEvent) {
 
-    log.info("{}: Processing request", productEvent.getRequestId());
+    log.info("{}: Processing request", crawlerEvent.getRequestId());
 
-    long productId = productEvent.getProductId();
-    Seller seller = productEvent.getSeller();
+    long productId = crawlerEvent.getProductId();
+    Seller seller = crawlerEvent.getSeller();
 
     log.debug("{}: Looking for product with PLID: {}", productId, productId);
 
@@ -60,7 +60,7 @@ public class CrawlerListener extends ProductRequest {
 
     try {
       String apiUrl =
-          "https://api.takealot.com/rest/v-1-8-0/product-details/" + plId + "?platform=desktop";
+          "https://api.takealot.com/rest/v-1-8-0/product-details/PLID" + plId + "?platform=desktop";
 
       Optional<ProductResponse> response = getProductResponse(apiUrl);
 
@@ -70,10 +70,7 @@ public class CrawlerListener extends ProductRequest {
 
       List<Category> categories =
           categoryService.createCategories(
-              response
-                  .get()
-                  .getCategories()
-                  .stream()
+              response.get().getCategories().stream()
                   .filter(Objects::nonNull)
                   .collect(Collectors.toList()));
 
@@ -86,6 +83,10 @@ public class CrawlerListener extends ProductRequest {
                   .seller(seller)
                   .brand(brand)
                   .categories(categories)
+                  .images(
+                      response.get().getImageUrls().stream()
+                          .map(u -> ProductImage.builder().url(u).build())
+                          .collect(Collectors.toList()))
                   .build());
 
       priceService.save(

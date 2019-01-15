@@ -1,8 +1,9 @@
-com/trak/worker/listener/CrawlerListener.class
 com/trak/worker/response/ProductResponse.class
+com/trak/worker/response/takealot/Gallery.class
 com/trak/worker/response/takealot/BuyBox.class
 com/trak/worker/response/takealot/Core.class
 com/trak/worker/response/takealot/Sharing.class
+com/trak/worker/listener/CrawlerEventListener.class
 com/trak/worker/response/takealot/TakealotApiResponse$TakealotApiResponseBuilder.class
 com/trak/worker/response/takealot/TakealotApiResponse.class
 com/trak/worker/listener/ProductRequest.class

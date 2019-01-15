@@ -122,3 +122,26 @@ insert into trak.seller_crawler (created, updated, version, seller_id, last_id)
 values (now(), now(), 0, 1, 41469985);
 
 -- rollback delete from trak.seller_crawler;
+
+-- changeset trak: 12
+
+create table trak.product_image (
+  id      bigint auto_increment not null,
+  version integer,
+  url     text,
+  primary key (id),
+  index (id)
+)
+  engine = InnoDB;
+
+-- changeset trak: 13
+
+create table trak.link_product_product_image (
+  product_id       bigint,
+  product_image_id bigint,
+  foreign key (product_id) references trak.product (id),
+  foreign key (product_image_id) references trak.product_image (id)
+)
+  engine = InnoDB;
+
+-- rollback drop table trak.link_product_product_images

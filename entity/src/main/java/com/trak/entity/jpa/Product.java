@@ -53,4 +53,12 @@ public class Product extends TimestampEntity implements Serializable {
       joinColumns = @JoinColumn(name = "product_id"),
       inverseJoinColumns = @JoinColumn(name = "category_id"))
   private List<Category> categories;
+
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "link_product_product_image",
+      schema = Schema.TRAK,
+      joinColumns = @JoinColumn(name = "product_id"),
+      inverseJoinColumns = @JoinColumn(name = "product_image_id"))
+  private List<ProductImage> images;
 }

@@ -4,8 +4,8 @@ import com.trak.entity.jpa.Crawler;
 import com.trak.entity.jpa.Seller;
 import com.trak.entity.jpa.service.CrawlerService;
 import com.trak.entity.jpa.service.SellerService;
-import com.trak.entity.rabbit.event.CreateProductEventFactory;
-import com.trak.entity.rabbit.event.ProductEvent;
+import com.trak.entity.rabbit.event.CreateCrawlerEventFactory;
+import com.trak.entity.rabbit.event.CrawlerEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -39,7 +39,7 @@ public class CreateCrawlerJob implements Runnable {
 
   @Async
   @Override
-  @Scheduled(initialDelay = 0L, fixedDelay = 1000L)
+  @Scheduled(initialDelay = 0L, fixedDelay = 10000L)
   public void run() {
 
     for (Seller seller : sellerService.findAll()) {
@@ -54,14 +54,14 @@ public class CreateCrawlerJob implements Runnable {
 
         long lastProductId = crawler.get().getLastId();
 
-        ProductEvent productEvent =
-            CreateProductEventFactory.createProductEvent(requestId, seller, lastProductId);
+        CrawlerEvent crawlerEvent =
+            CreateCrawlerEventFactory.createProductEvent(requestId, seller, lastProductId);
 
         crawler.get().setLastId(++lastProductId);
 
         crawlerService.save(crawler.get());
 
-        rabbitTemplate.convertAndSend(queue.getName(), productEvent);
+        rabbitTemplate.convertAndSend(queue.getName(), crawlerEvent);
       } else {
         log.warn("No crawler for sellerId: {}", seller.getId());
       }

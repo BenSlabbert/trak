@@ -19,4 +19,6 @@ public interface ProductResponse {
   Double getRating();
 
   List<String> getCategories();
+
+  List<String> getImageUrls();
 }

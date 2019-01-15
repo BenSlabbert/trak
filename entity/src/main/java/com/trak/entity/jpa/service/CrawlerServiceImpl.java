@@ -4,6 +4,7 @@ import com.trak.entity.jpa.Crawler;
 import com.trak.entity.jpa.Seller;
 import com.trak.entity.jpa.repo.CrawlerRepo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +33,10 @@ public class CrawlerServiceImpl implements CrawlerService {
     try {
       return repo.saveAndFlush(crawler);
     } catch (OptimisticLockException e) {
-      log.warn("OptimisticLockException while saving crawler!", e);
+      log.warn("OptimisticLockException while saving crawler! Retrying ...");
+      return save(crawler);
+    } catch (ObjectOptimisticLockingFailureException e) {
+      log.warn("ObjectOptimisticLockingFailureException while saving crawler! Retrying ...");
       return save(crawler);
     }
   }

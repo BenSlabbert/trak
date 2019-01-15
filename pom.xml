@@ -12,6 +12,8 @@
     <module>engine</module>
     <module>entity</module>
     <module>worker</module>
+    <module>api</module>
+    <module>search</module>
   </modules>
 
   <properties>

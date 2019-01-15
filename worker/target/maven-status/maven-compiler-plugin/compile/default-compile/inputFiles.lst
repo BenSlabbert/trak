@@ -1,10 +1,11 @@
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/response/takealot/TakealotApiResponse.java
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/listener/ProductRequest.java
-/home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/listener/CrawlerListener.java
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/response/takealot/Sharing.java
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/response/takealot/Core.java
+/home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/response/takealot/Gallery.java
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/response/takealot/BuyBox.java
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/config/EntityConfig.java
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/response/takealot/DataLayer.java
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/WorkerApplication.java
 /home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/response/ProductResponse.java
+/home/ben/ideaProjects/trak/worker/src/main/java/com/trak/worker/listener/CrawlerEventListener.java

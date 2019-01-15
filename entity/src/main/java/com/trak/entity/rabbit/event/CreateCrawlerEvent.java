@@ -4,13 +4,13 @@ import com.trak.entity.jpa.Seller;
 
 import java.io.Serializable;
 
-public class CreateProductEvent implements ProductEvent, Serializable {
+public class CreateCrawlerEvent implements CrawlerEvent, Serializable {
 
   private final String requestId;
   private final long productId;
   private final Seller seller;
 
-  CreateProductEvent(String requestId, Seller seller, long productId) {
+  CreateCrawlerEvent(String requestId, Seller seller, long productId) {
     this.requestId = requestId;
     this.productId = productId;
     this.seller = seller;

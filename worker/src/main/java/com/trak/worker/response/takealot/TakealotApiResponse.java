@@ -34,6 +34,9 @@ public class TakealotApiResponse implements ProductResponse {
   @JsonProperty(value = "sharing")
   private Sharing sharing;
 
+  @JsonProperty(value = "gallery")
+  private Gallery gallery;
+
   @Override
   public Long getCurrentPrice() {
 
@@ -80,5 +83,19 @@ public class TakealotApiResponse implements ProductResponse {
   @Override
   public List<String> getCategories() {
     return dataLayer.getCategories() != null ? dataLayer.getCategories() : Collections.emptyList();
+  }
+
+  @Override
+  public List<String> getImageUrls() {
+
+    List<String> images = gallery.getImages();
+
+    for (int i = images.size() - 1; i >= 0; i--) {
+      if (images.get(i).contains("{size}")) {
+        images.set(i, images.get(i).replace("{size}", "pdpxl"));
+      }
+    }
+
+    return images;
   }
 }
