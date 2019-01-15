@@ -6,6 +6,10 @@ Tracking the prices of items on [Takealot](https://www.takealot.com/).
 
 This project was inspired by the site: [camelcamelcamel](https://camelcamelcamel.com/)
 
+## Artifacts
+
+* [Docker Images](https://hub.docker.com/u/benjaminslabbert)
+
 ## Builds
 
 [Travis-CI](https://travis-ci.org/BenSlabbert/trak)
