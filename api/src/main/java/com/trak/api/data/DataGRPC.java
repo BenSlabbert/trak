@@ -1,12 +1,14 @@
 package com.trak.api.data;
 
-import com.trak.api.proto.HelloRequest;
-import com.trak.api.proto.HelloResponse;
-import com.trak.api.proto.HelloServiceGrpc;
+import com.trak.grpc.HelloRequest;
+import com.trak.grpc.HelloResponse;
+import com.trak.grpc.HelloServiceGrpc;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 public class DataGRPC extends HelloServiceGrpc.HelloServiceImplBase {
 
   @Override
