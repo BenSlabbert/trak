@@ -1,6 +1,8 @@
 package io.github.benslabbert.trak.entity.jpa;
 
 import lombok.*;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -46,19 +48,21 @@ public class Product extends TimestampEntity implements Serializable {
   @JoinColumn(name = "brand_id", referencedColumnName = "id")
   private Brand brand;
 
-  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @OneToMany(cascade = CascadeType.ALL)
   @JoinTable(
       name = "link_product_category",
       schema = Schema.TRAK,
       joinColumns = @JoinColumn(name = "product_id"),
       inverseJoinColumns = @JoinColumn(name = "category_id"))
+  @LazyCollection(LazyCollectionOption.FALSE)
   private List<Category> categories;
 
-  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @OneToMany(cascade = CascadeType.ALL)
   @JoinTable(
       name = "link_product_product_image",
       schema = Schema.TRAK,
       joinColumns = @JoinColumn(name = "product_id"),
       inverseJoinColumns = @JoinColumn(name = "product_image_id"))
+  @LazyCollection(LazyCollectionOption.FALSE)
   private List<ProductImage> images;
 }

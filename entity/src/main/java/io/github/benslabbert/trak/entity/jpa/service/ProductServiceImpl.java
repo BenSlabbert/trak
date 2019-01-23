@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.OptimisticLockException;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -31,6 +32,11 @@ public class ProductServiceImpl implements ProductService {
       log.warn("OptimisticLockException while saving product!", e);
       return save(product);
     }
+  }
+
+  @Override
+  public Optional<Product> findOne(long id) {
+    return repo.findById(id);
   }
 
   @Override

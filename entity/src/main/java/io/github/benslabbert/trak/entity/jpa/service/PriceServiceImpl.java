@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.OptimisticLockException;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -34,5 +35,10 @@ public class PriceServiceImpl implements PriceService {
   @Override
   public List<Price> findAllByProductId(long productId) {
     return repo.findAllByProductIdEquals(productId);
+  }
+
+  @Override
+  public Optional<Price> findLatestByProductId(long productId) {
+    return repo.findTopByProductIdEquals(productId);
   }
 }
