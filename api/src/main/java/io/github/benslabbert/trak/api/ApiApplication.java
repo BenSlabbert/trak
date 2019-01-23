@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.IOException;
@@ -18,37 +18,34 @@ import java.util.Map;
 @EnableTransactionManagement
 public class ApiApplication {
 
-  private final ApplicationContext context;
-
-  public ApiApplication(ApplicationContext context) {
-    this.context = context;
-  }
-
   public static void main(String[] args) {
 
     try {
-      SpringApplication.run(ApiApplication.class, args);
+      ConfigurableApplicationContext context = SpringApplication.run(ApiApplication.class, args);
+      server(context);
+      log.info("Api initialized!");
     } catch (Exception e) {
       log.error("Failed to run application!", e);
     }
   }
 
-  @Bean
-  public Server server() throws IOException, InterruptedException {
+  private static void server(ApplicationContext context) throws IOException, InterruptedException {
+
+    log.debug("Setting up gRPC server");
 
     Map<String, BindableService> beansOfType = context.getBeansOfType(BindableService.class);
 
     ServerBuilder<?> serverBuilder = ServerBuilder.forPort(50051);
 
     for (Map.Entry<String, BindableService> entry : beansOfType.entrySet()) {
+      log.debug("Adding grPC service: {}", entry.getKey());
       serverBuilder.addService(entry.getValue());
     }
 
+    log.debug("Starting gRPC server");
     Server server = serverBuilder.build();
 
     server.start();
     server.awaitTermination();
-
-    return server;
   }
 }
