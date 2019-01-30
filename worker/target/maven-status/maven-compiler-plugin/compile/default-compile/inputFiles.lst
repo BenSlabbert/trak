@@ -1,5 +1,6 @@
 /home/ben/ideaProjects/trak/worker/src/main/java/io/github/benslabbert/trak/worker/response/takealot/TakealotApiResponse.java
 /home/ben/ideaProjects/trak/worker/src/main/java/io/github/benslabbert/trak/worker/response/takealot/Gallery.java
+/home/ben/ideaProjects/trak/worker/src/main/java/io/github/benslabbert/trak/worker/listener/ProductEventListener.java
 /home/ben/ideaProjects/trak/worker/src/main/java/io/github/benslabbert/trak/worker/WorkerApplication.java
 /home/ben/ideaProjects/trak/worker/src/main/java/io/github/benslabbert/trak/worker/response/takealot/Core.java
 /home/ben/ideaProjects/trak/worker/src/main/java/io/github/benslabbert/trak/worker/response/takealot/BuyBox.java

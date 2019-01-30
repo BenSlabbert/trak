@@ -3,6 +3,7 @@ package io.github.benslabbert.trak.entity.jpa.service;
 import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.repo.BrandRepo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,15 @@ public class BrandServiceImpl implements BrandService {
       brand.setName("Unknown".toUpperCase());
     }
 
-    return repo.saveAndFlush(brand);
+    try {
+      return repo.saveAndFlush(brand);
+    } catch (OptimisticLockException e) {
+      log.warn("OptimisticLockException while saving brand! Retrying ...");
+      return save(brand);
+    } catch (ObjectOptimisticLockingFailureException e) {
+      log.warn("ObjectOptimisticLockingFailureException while saving brand! Retrying ...");
+      return save(brand);
+    }
   }
 
   @Override

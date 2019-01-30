@@ -40,6 +40,9 @@ public class Product extends TimestampEntity implements Serializable {
   @Column(name = "api_endpoint")
   private String apiEndpoint;
 
+  @Column(name = "pl_id")
+  private Long plId;
+
   @OneToOne
   @JoinColumn(name = "seller_id", referencedColumnName = "id")
   private Seller seller;
@@ -48,7 +51,7 @@ public class Product extends TimestampEntity implements Serializable {
   @JoinColumn(name = "brand_id", referencedColumnName = "id")
   private Brand brand;
 
-  @OneToMany(cascade = CascadeType.ALL)
+  @OneToMany
   @JoinTable(
       name = "link_product_category",
       schema = Schema.TRAK,

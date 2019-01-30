@@ -1,0 +1,32 @@
+version: '3.3'
+
+services:
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+    restart: always
+    ports:
+      - 9200:9200
+      - 9300:9300
+    network_mode: "host"
+    environment:
+      - "discovery.type=single-node"
+      - "transport.host=localhost"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.4.1
+    restart: always
+    ports:
+      - 5601:5601
+    network_mode: "host"
+    environment:
+      SERVER_NAME: kibana.local
+      ELASTICSEARCH_URL: http://localhost:9200
+
+  logstash:
+    build: ./logstash-conf-local/
+    image: benjaminslabbert/trak_logstash:0.0.0-local
+    ports:
+      - 9600:9600
+    restart: always
+    network_mode: "host"

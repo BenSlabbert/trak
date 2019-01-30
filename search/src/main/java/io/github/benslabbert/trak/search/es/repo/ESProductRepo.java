@@ -13,7 +13,7 @@ public interface ESProductRepo extends ElasticsearchRepository<ESProduct, String
 
   List<ESProduct> findAllByNameEquals(String name);
 
-  List<ESProduct> findAllByNameContaining(String name);
+  Page<ESProduct> findAllByNameIgnoreCase(String name, Pageable pageable);
 
-  Page<ESProduct> findAllByNameContaining(String name, Pageable pageable);
+  List<ESProduct> findAllByNameContaining(String name);
 }

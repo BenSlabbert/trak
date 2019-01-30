@@ -4,8 +4,8 @@ import io.github.benslabbert.trak.entity.jpa.Crawler;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.CrawlerService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
-import io.github.benslabbert.trak.entity.rabbit.event.CreateCrawlerEventFactory;
 import io.github.benslabbert.trak.entity.rabbit.event.CrawlerEvent;
+import io.github.benslabbert.trak.entity.rabbit.event.CreateCrawlerEventFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -29,12 +29,12 @@ public class CreateCrawlerJob implements Runnable {
       RabbitTemplate rabbitTemplate,
       CrawlerService crawlerService,
       SellerService sellerService,
-      Queue queue) {
+      Queue crawlerQueue) {
 
     this.rabbitTemplate = rabbitTemplate;
     this.crawlerService = crawlerService;
     this.sellerService = sellerService;
-    this.queue = queue;
+    this.queue = crawlerQueue;
   }
 
   @Async
@@ -62,9 +62,12 @@ public class CreateCrawlerJob implements Runnable {
         crawlerService.save(crawler.get());
 
         rabbitTemplate.convertAndSend(queue.getName(), crawlerEvent);
+
       } else {
         log.warn("No crawler for sellerId: {}", seller.getId());
       }
     }
+
+    log.debug("Finished job");
   }
 }

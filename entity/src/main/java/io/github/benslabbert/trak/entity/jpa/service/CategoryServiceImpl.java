@@ -3,9 +3,11 @@ package io.github.benslabbert.trak.entity.jpa.service;
 import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.repo.CategoryRepo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.OptimisticLockException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +44,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     if (category.isPresent()) return category.get();
 
-    return repo.saveAndFlush(Category.builder().name(name).build());
+    return save(Category.builder().name(name).build());
+  }
+
+  private Category save(Category category) {
+
+    try {
+      return repo.saveAndFlush(category);
+    } catch (OptimisticLockException e) {
+      log.warn("OptimisticLockException while saving category! Retrying ...");
+      return save(category);
+    } catch (ObjectOptimisticLockingFailureException e) {
+      log.warn("ObjectOptimisticLockingFailureException while saving category! Retrying ...");
+      return save(category);
+    }
   }
 }

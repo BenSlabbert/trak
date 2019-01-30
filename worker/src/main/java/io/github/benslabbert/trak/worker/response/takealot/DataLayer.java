@@ -18,4 +18,7 @@ class DataLayer {
 
   @JsonProperty(value = "categoryname")
   private List<String> categories;
+
+  @JsonProperty(value = "sku")
+  private String sku;
 }

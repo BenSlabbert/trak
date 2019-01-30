@@ -7,8 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Slf4j
 @Service
 public class ESProductServiceImpl implements ESProductService {
@@ -20,22 +18,7 @@ public class ESProductServiceImpl implements ESProductService {
   }
 
   @Override
-  public ESProduct addProduct(ESProduct product) {
-    return esProductRepo.save(product);
-  }
-
-  @Override
-  public List<ESProduct> findProductByName(String name) {
-    return esProductRepo.findAllByNameEquals(name);
-  }
-
-  @Override
-  public List<ESProduct> findProductByNameLike(String name) {
-    return esProductRepo.findAllByNameContaining(name);
-  }
-
-  @Override
   public Page<ESProduct> findProductByNameLike(String name, Pageable pageable) {
-    return esProductRepo.findAllByNameContaining(name, pageable);
+    return esProductRepo.findAllByNameIgnoreCase(name, pageable);
   }
 }

@@ -7,12 +7,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
 import static org.junit.Assert.assertEquals;
@@ -48,11 +48,11 @@ public class PriceServiceImplTest {
   @Test
   public void findAllByProductIdTest() {
 
-    List<Price> prices = service.findAllByProductId(1L);
+    Page<Price> prices = service.findAllByProductId(1L, PageRequest.of(0, 10));
 
     assertNotNull(prices);
-    assertEquals(1, prices.size());
+    assertEquals(1, prices.getContent().size());
 
-    assertEquals(1L, prices.get(0).getProductId());
+    assertEquals(1L, prices.getContent().get(0).getProductId());
   }
 }

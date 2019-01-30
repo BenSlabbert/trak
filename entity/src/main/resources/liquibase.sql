@@ -56,6 +56,7 @@ create table trak.product (
   version      integer,
   brand_id     bigint                not null,
   seller_id    bigint                not null,
+  pl_id        bigint unique,
   primary key (id),
   foreign key (brand_id) references trak.brand (id),
   foreign key (seller_id) references trak.seller (id),

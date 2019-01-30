@@ -6,6 +6,7 @@ import io.github.benslabbert.trak.entity.jpa.repo.ProductRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,10 @@ public class ProductServiceImpl implements ProductService {
     try {
       return repo.saveAndFlush(product);
     } catch (OptimisticLockException e) {
-      log.warn("OptimisticLockException while saving product!", e);
+      log.warn("OptimisticLockException while saving product! Retrying ...");
+      return save(product);
+    } catch (ObjectOptimisticLockingFailureException e) {
+      log.warn("ObjectOptimisticLockingFailureException while saving product! Retrying ...");
       return save(product);
     }
   }
@@ -52,5 +56,10 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Iterable<Product> findAll(Seller seller) {
     return repo.findAllBySellerEquals(seller);
+  }
+
+  @Override
+  public Page<Product> findAll(Seller seller, Pageable pageable) {
+    return repo.findAllBySellerEquals(seller, pageable);
   }
 }

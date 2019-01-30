@@ -18,4 +18,6 @@ public interface ProductService {
   Page<Product> findAll(Pageable pageable);
 
   Iterable<Product> findAll(Seller seller);
+
+  Page<Product> findAll(Seller seller, Pageable pageable);
 }

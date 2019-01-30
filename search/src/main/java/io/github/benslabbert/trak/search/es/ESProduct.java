@@ -1,17 +1,21 @@
 package io.github.benslabbert.trak.search.es;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.Score;
 
 import java.io.Serializable;
 
 @Data
 @Builder
-@Document(indexName = "product")
+@Document(indexName = "product_index", type = "doc")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ESProduct implements Serializable {
@@ -20,7 +24,11 @@ public class ESProduct implements Serializable {
 
   @Id private String id;
 
-  private Long rdsId;
-
   private String name;
+
+  @JsonProperty("pl_id")
+  @Field(type = FieldType.Long)
+  private Long plId;
+
+  @Score private Float score;
 }

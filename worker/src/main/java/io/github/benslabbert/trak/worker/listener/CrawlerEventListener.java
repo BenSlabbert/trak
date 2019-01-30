@@ -1,7 +1,6 @@
 package io.github.benslabbert.trak.worker.listener;
 
 import io.github.benslabbert.trak.entity.jpa.*;
-import io.github.benslabbert.trak.entity.jpa.*;
 import io.github.benslabbert.trak.entity.jpa.service.BrandService;
 import io.github.benslabbert.trak.entity.jpa.service.CategoryService;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
@@ -13,7 +12,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,7 +42,6 @@ public class CrawlerEventListener extends ProductRequest {
   }
 
   @RabbitHandler
-  @Transactional
   public void receive(CrawlerEvent crawlerEvent) {
 
     log.info("{}: Processing request", crawlerEvent.getRequestId());
@@ -84,6 +81,8 @@ public class CrawlerEventListener extends ProductRequest {
                   .seller(seller)
                   .brand(brand)
                   .categories(categories)
+                  .plId(plId)
+                  .sku(response.get().getSKU())
                   .images(
                       response.get().getImageUrls().stream()
                           .map(u -> ProductImage.builder().url(u).build())

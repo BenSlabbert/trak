@@ -11,10 +11,15 @@ import io.github.benslabbert.trak.grpc.*;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -71,7 +76,8 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
 
   private ProductStatsResponse getProductStatsResponse(ProductRequest request) {
 
-    List<Price> prices = priceService.findAllByProductId(request.getProductId());
+    Page<Price> prices =
+        priceService.findAllByProductId(request.getProductId(), PageRequest.of(0, 10));
 
     ProductStatsResponse.Builder statsBuilder = ProductStatsResponse.newBuilder();
 
@@ -90,13 +96,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
       } else if (price.getCurrentPrice() < min) {
         min = price.getCurrentPrice();
       }
-
-      statsBuilder.addPrices(
-          PriceMessage.newBuilder()
-              .setCurrentPrice(price.getCurrentPrice())
-              .setDate(price.getCreated().getTime())
-              .setListedPrice(price.getListedPrice())
-              .build());
     }
 
     if (count == 0) count = 1;
@@ -106,7 +105,43 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
     statsBuilder.setMinPrice(min);
     statsBuilder.setMeanPrice(total / count);
 
+    statsBuilder.setChartData(getChartData(request.getProductId()));
+
     return statsBuilder.build();
+  }
+
+  private ChartDataMessage getChartData(long productId) {
+
+    List<Price> prices = priceService.findAllByCreatedGreaterThan(productId, new Date(0L));
+
+    List<String> labels =
+        prices.stream().map(p -> p.getCreated().toString()).collect(Collectors.toList());
+
+    List<ChartDataSetMessage> dataSets =
+        Arrays.asList(
+            ChartDataSetMessage.newBuilder()
+                .setLabel("current")
+                .setFillColor("rgba(220,220,220,0.2)")
+                .setStrokeColor("rgba(220,220,220,1)")
+                .setPointColor("rgba(220,220,220,1)")
+                .setPointStrokeColor("#fff")
+                .setPointHighlightFill("#fff")
+                .setPointHighlightStroke("rgba(220,220,220,1)")
+                .addAllData(
+                    prices.stream().map(Price::getCurrentPrice).collect(Collectors.toList()))
+                .build(),
+            ChartDataSetMessage.newBuilder()
+                .setLabel("listed")
+                .setFillColor("rgba(151,187,205,0.2)")
+                .setStrokeColor("rgba(151,187,205,1)")
+                .setPointColor("rgba(151,187,205,1)")
+                .setPointStrokeColor("#fff")
+                .setPointHighlightFill("#fff")
+                .setPointHighlightStroke("rgba(151,187,205,1)")
+                .addAllData(prices.stream().map(Price::getListedPrice).collect(Collectors.toList()))
+                .build());
+
+    return ChartDataMessage.newBuilder().addAllLabels(labels).addAllDataSets(dataSets).build();
   }
 
   private String getProductImageUrl(Product p) {

@@ -4,6 +4,7 @@ io/github/benslabbert/trak/worker/response/takealot/TakealotApiResponse.class
 io/github/benslabbert/trak/worker/listener/CrawlerEventListener.class
 io/github/benslabbert/trak/worker/response/ProductResponse.class
 io/github/benslabbert/trak/worker/response/takealot/Core.class
+io/github/benslabbert/trak/worker/listener/ProductEventListener.class
 io/github/benslabbert/trak/worker/response/takealot/Gallery.class
 io/github/benslabbert/trak/worker/listener/ProductRequest.class
 io/github/benslabbert/trak/worker/WorkerApplication.class

@@ -1,6 +1,8 @@
 package io.github.benslabbert.trak.entity.rabbit.event;
 
-public interface Event {
+import java.io.Serializable;
+
+public interface Event extends Serializable {
 
   String getRequestId();
 }

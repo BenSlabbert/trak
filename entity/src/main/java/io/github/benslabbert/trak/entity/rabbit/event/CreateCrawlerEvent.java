@@ -2,9 +2,9 @@ package io.github.benslabbert.trak.entity.rabbit.event;
 
 import io.github.benslabbert.trak.entity.jpa.Seller;
 
-import java.io.Serializable;
+public class CreateCrawlerEvent implements CrawlerEvent {
 
-public class CreateCrawlerEvent implements CrawlerEvent, Serializable {
+  private static final long serialVersionUID = -8685816501160613188L;
 
   private final String requestId;
   private final long productId;

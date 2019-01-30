@@ -11,6 +11,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import static io.github.benslabbert.trak.entity.rabbit.Queue.CRAWLER_QUEUE;
+import static io.github.benslabbert.trak.entity.rabbit.Queue.PRODUCT_QUEUE;
 
 @Slf4j
 @EnableAsync
@@ -40,7 +41,12 @@ public class EngineApplication {
   }
 
   @Bean
-  public Queue createCrawlerQueue() {
+  public Queue crawlerQueue() {
     return new Queue(CRAWLER_QUEUE, true, false, false);
+  }
+
+  @Bean
+  public Queue productQueue() {
+    return new Queue(PRODUCT_QUEUE, true, false, false);
   }
 }

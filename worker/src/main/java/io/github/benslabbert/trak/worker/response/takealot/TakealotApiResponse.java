@@ -47,7 +47,9 @@ public class TakealotApiResponse implements ProductResponse {
       return 0L;
     }
 
-    return prices.get(0);
+    Long price = prices.get(0);
+
+    return price == null ? 0L : price;
   }
 
   @Override
@@ -57,7 +59,7 @@ public class TakealotApiResponse implements ProductResponse {
 
   @Override
   public String getSKU() {
-    return buyBox.getProductLineId();
+    return dataLayer.getSku();
   }
 
   @Override
