@@ -6,10 +6,28 @@ services:
     image: rabbitmq
     hostname: rabbit
     restart: always
+    ports:
+      - 5672:5672
+    volumes:
+      - "rabbit-data:/var/lib/rabbitmq"
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - 27017:27017
 
   rds:
     image: mariadb
     restart: always
+    ports:
+      - 3306:3306
+    volumes:
+      - "rds-data:/var/lib/mysql"
     environment:
       - MYSQL_ROOT_PASSWORD=my-secret-pw
       - MYSQL_DATABASE=trak
@@ -45,6 +63,8 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
+    volumes:
+      - "es-data:/usr/share/elasticsearch/data"
     environment:
       - "discovery.type=single-node"
       - "transport.host=es"
@@ -54,15 +74,34 @@ services:
     restart: always
     ports:
       - 5601:5601
+    volumes:
+      - "kibana-data:/usr/share/kibana"
     environment:
       SERVER_NAME: kibana.local
       ELASTICSEARCH_URL: http://es:9200
+    depends_on:
+      - es
 
   logstash:
-    build: ./logstash-conf/
+    build: ./logstash-conf-local/
     image: benjaminslabbert/trak_logstash:0.0.0
+    network_mode: "host"
     ports:
       - 9600:9600
     restart: always
+    depends_on:
+      - es
+
+volumes:
+  rabbit-data:
+    driver: local
+  rds-data:
+    driver: local
+  es-data:
+    driver: local
+  kibana-data:
+    driver: local
+  mongo-data:
+    driver: local
 
 # todo add trak-ui container

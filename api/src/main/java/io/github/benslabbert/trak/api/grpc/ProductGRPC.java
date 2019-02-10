@@ -69,6 +69,20 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
                 .setPrice(getPrice(product))
                 .setProductUrl(product.getUrl())
                 .setImageUrl(getProductImageUrl(product))
+                .setBrand(
+                    BrandMessage.newBuilder()
+                        .setName(product.getBrand().getName())
+                        .setId(product.getBrand().getId())
+                        .build())
+                .addAllCategories(
+                    product.getCategories().stream()
+                        .map(
+                            c ->
+                                CategoryMessage.newBuilder()
+                                    .setId(c.getId())
+                                    .setName(c.getName())
+                                    .build())
+                        .collect(Collectors.toList()))
                 .build())
         .setStats(statsResponse)
         .build();

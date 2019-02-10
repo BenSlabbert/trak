@@ -39,7 +39,7 @@ public class PriceUpdateJob implements Runnable {
 
   @Async
   @Override
-  @Scheduled(cron = "0 0 */6 * * ?")
+  @Scheduled(cron = "0 0/2 * * * ?")
   public void run() {
 
     log.debug("Starting job");

@@ -36,7 +36,7 @@ public class ESTransportClientConfig {
   @Bean
   @Profile("dev")
   public Client devClient() throws UnknownHostException {
-    return getClient(InetAddress.getByName("127.0.0.1"));
+    return getClient(InetAddress.getLocalHost());
   }
 
   private Client getClient(InetAddress localHost) {

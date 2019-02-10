@@ -37,6 +37,8 @@ public class ProductEventListener extends ProductRequest {
           "Failed to get product response for productId: {}, productName: {}",
           priceUpdateEvent.getProduct().getId(),
           priceUpdateEvent.getProduct().getName());
+
+      return;
     }
 
     Long currentPrice = productResponse.get().getCurrentPrice();

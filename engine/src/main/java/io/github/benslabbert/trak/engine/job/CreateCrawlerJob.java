@@ -39,7 +39,7 @@ public class CreateCrawlerJob implements Runnable {
 
   @Async
   @Override
-  @Scheduled(initialDelay = 0L, fixedDelay = 10000L)
+  @Scheduled(initialDelay = 0L, fixedDelay = 1000L)
   public void run() {
 
     for (Seller seller : sellerService.findAll()) {

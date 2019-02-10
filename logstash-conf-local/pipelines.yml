@@ -2,4 +2,16 @@
   pipeline.workers: 1
   pipeline.batch.size: 1
   queue.type: persisted
-  path.config: "/usr/share/logstash/pipeline/logs.conf"
+  path.config: "/usr/share/logstash/pipeline/products-import.conf"
+
+- pipeline.id: trak-brands
+  pipeline.workers: 1
+  pipeline.batch.size: 1
+  queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/brands-import.conf"
+
+- pipeline.id: trak-categories
+  pipeline.workers: 1
+  pipeline.batch.size: 1
+  queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/category-import.conf"

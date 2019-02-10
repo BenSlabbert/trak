@@ -1,6 +1,6 @@
 package io.github.benslabbert.trak.search.es.service;
 
-import io.github.benslabbert.trak.search.es.ESProduct;
+import io.github.benslabbert.trak.search.es.model.ESProduct;
 import io.github.benslabbert.trak.search.es.repo.ESProductRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +19,6 @@ public class ESProductServiceImpl implements ESProductService {
 
   @Override
   public Page<ESProduct> findProductByNameLike(String name, Pageable pageable) {
-    return esProductRepo.findAllByNameIgnoreCase(name, pageable);
+    return esProductRepo.findAllByNameContaining(name, pageable);
   }
 }
