@@ -9,6 +9,8 @@ services:
       - 9200:9200
       - 9300:9300
     network_mode: "host"
+    volumes:
+      - "./.data/es/:/usr/share/elasticsearch/data"
     environment:
       - "discovery.type=single-node"
       - "transport.host=localhost"
