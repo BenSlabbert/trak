@@ -12,8 +12,6 @@ public interface SellerService {
 
   Optional<Seller> findByNameEquals(String name);
 
-  Iterable<Seller> findAll();
-
   Page<Seller> findAll(Pageable pageable);
 
   Optional<Seller> findById(long id);

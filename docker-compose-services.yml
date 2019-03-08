@@ -10,18 +10,16 @@ services:
     ports:
       - 5672:5672
     volumes:
-      - "rabbit-data:/var/lib/rabbitmq"
+      - rabbit-data:/var/lib/rabbitmq
 
-  mongo:
-    image: mongo
+  redis:
+    image: redis:5-alpine
     restart: always
-    mem_limit: 250m
-    environment:
-      - MONGO_DATA_DIR=/data/db
-    volumes:
-      - mongo-data:/data/db
     ports:
-      - 27017:27017
+      - 6379:6379
+    mem_limit: 600m
+    volumes:
+      - redis-data:/data
 
   rds:
     image: mariadb
@@ -29,7 +27,7 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - "rds-data:/var/lib/mysql"
+      - rds-data:/var/lib/mysql
     mem_limit: 250m
     environment:
       - MYSQL_ROOT_PASSWORD=my-secret-pw
@@ -44,23 +42,23 @@ services:
       - 9200:9200
       - 9300:9300
     volumes:
-      - "es-data:/usr/share/elasticsearch/data"
+      - es-data:/usr/share/elasticsearch/data
     environment:
       - "discovery.type=single-node"
       - "transport.host=es"
 
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:6.4.1
-#    restart: always
-#    ports:
-#      - 5601:5601
-#    volumes:
-#      - "kibana-data:/usr/share/kibana"
-#    environment:
-#      SERVER_NAME: kibana.local
-#      ELASTICSEARCH_URL: http://es:9200
-#    depends_on:
-#      - es
+  #  kibana:
+  #    image: docker.elastic.co/kibana/kibana:6.4.1
+  #    restart: always
+  #    ports:
+  #      - 5601:5601
+  #    volumes:
+  #      - "kibana-data:/usr/share/kibana"
+  #    environment:
+  #      SERVER_NAME: kibana.local
+  #      ELASTICSEARCH_URL: http://es:9200
+  #    depends_on:
+  #      - es
 
   logstash:
     build: ./logstash-conf-local/
@@ -81,7 +79,7 @@ volumes:
     driver: local
   kibana-data:
     driver: local
-  mongo-data:
+  redis-data:
     driver: local
 
 # todo add trak-ui container

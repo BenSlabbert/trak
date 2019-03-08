@@ -7,8 +7,6 @@ import java.util.Optional;
 
 public interface CrawlerService {
 
-  Iterable<Crawler> findAll();
-
   Crawler save(Crawler crawler);
 
   Optional<Crawler> findBySeller(Seller seller);

@@ -43,22 +43,10 @@ public class ProductServiceImplTest {
   @Test
   public void saveTest() {
 
-    Product product = service.save(Product.builder().name("product").build());
+    Product product = service.save(null);
 
     assertNotNull(product);
     assertEquals("product", product.getName());
-  }
-
-  @Test
-  public void findAllTest() {
-
-    Iterable<Product> all = service.findAll();
-
-    assertNotNull(all);
-
-    assertTrue(all.iterator().hasNext());
-
-    assertEquals("product", all.iterator().next().getName());
   }
 
   @Test

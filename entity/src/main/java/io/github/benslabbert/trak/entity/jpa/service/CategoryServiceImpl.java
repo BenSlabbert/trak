@@ -3,11 +3,9 @@ package io.github.benslabbert.trak.entity.jpa.service;
 import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.repo.CategoryRepo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.OptimisticLockException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +13,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @Transactional
-public class CategoryServiceImpl implements CategoryService {
+public class CategoryServiceImpl extends RetryPersist<Category, Long> implements CategoryService {
 
   private final CategoryRepo repo;
 
@@ -47,16 +45,12 @@ public class CategoryServiceImpl implements CategoryService {
     return save(Category.builder().name(name).build());
   }
 
-  private Category save(Category category) {
+  @Override
+  public Optional<Category> findById(long id) {
+    return repo.findById(id);
+  }
 
-    try {
-      return repo.saveAndFlush(category);
-    } catch (OptimisticLockException e) {
-      log.warn("OptimisticLockException while saving category! Retrying ...");
-      return save(category);
-    } catch (ObjectOptimisticLockingFailureException e) {
-      log.warn("ObjectOptimisticLockingFailureException while saving category! Retrying ...");
-      return save(category);
-    }
+  private Category save(Category category) {
+    return retry(category, repo);
   }
 }

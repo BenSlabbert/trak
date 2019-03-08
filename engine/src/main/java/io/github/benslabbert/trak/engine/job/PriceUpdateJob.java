@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @Component
-public class PriceUpdateJob implements Runnable {
+public class PriceUpdateJob extends PageOverAll<Seller> implements Runnable {
 
   private final ProductService productService;
   private final RabbitTemplate rabbitTemplate;
@@ -31,9 +31,9 @@ public class PriceUpdateJob implements Runnable {
       SellerService sellerService,
       Queue productQueue) {
 
-    this.sellerService = sellerService;
     this.productService = productService;
     this.rabbitTemplate = rabbitTemplate;
+    this.sellerService = sellerService;
     this.queue = productQueue;
   }
 
@@ -45,22 +45,7 @@ public class PriceUpdateJob implements Runnable {
     log.debug("Starting job");
 
     try {
-
-      Page<Seller> sellers = sellerService.findAll(PageRequest.of(0, 10));
-
-      while (sellers.hasContent()) {
-
-        for (Seller seller : sellers.getContent()) {
-          createProductPriceUpdateEvents(seller);
-        }
-
-        if (sellers.hasNext()) {
-          sellers = sellerService.findAll(sellers.nextPageable());
-        } else {
-          break;
-        }
-      }
-
+      pageOverAll(sellerService.findAll(PageRequest.of(0, 10)));
     } catch (Exception e) {
       log.debug("General exception", e);
     }
@@ -91,5 +76,15 @@ public class PriceUpdateJob implements Runnable {
         break;
       }
     }
+  }
+
+  @Override
+  Page<Seller> nextPage(Page<Seller> page) {
+    return sellerService.findAll(page.nextPageable());
+  }
+
+  @Override
+  void processItem(Seller item) {
+    createProductPriceUpdateEvents(item);
   }
 }

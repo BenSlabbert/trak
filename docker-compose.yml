@@ -12,16 +12,14 @@ services:
     volumes:
       - "rabbit-data:/var/lib/rabbitmq"
 
-  mongo:
-    image: mongo
+  redis:
+    image: redis:5-alpine
     restart: always
-    mem_limit: 250m
-    environment:
-      - MONGO_DATA_DIR=/data/db
-    volumes:
-      - mongo-data:/data/db
     ports:
-      - 27017:27017
+      - 6379:6379
+    mem_limit: 600m
+    volumes:
+      - redis-data:/data
 
   rds:
     image: mariadb
@@ -112,7 +110,7 @@ volumes:
     driver: local
   kibana-data:
     driver: local
-  mongo-data:
+  redis-data:
     driver: local
 
 # todo add trak-ui container

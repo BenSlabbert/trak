@@ -6,6 +6,7 @@ import io.grpc.ServerBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
+@EnableCaching
 @SpringBootApplication
 @EnableTransactionManagement
 public class ApiApplication {

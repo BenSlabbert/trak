@@ -55,16 +55,6 @@ public class SellerServiceImplTest {
   }
 
   @Test
-  public void findAllTest() {
-
-    Iterable<Seller> all = service.findAll();
-
-    assertNotNull(all);
-    assertTrue(all.iterator().hasNext());
-    assertEquals("seller", all.iterator().next().getName());
-  }
-
-  @Test
   public void findByIdTest() {
 
     Long id = repo.findAll().get(0).getId();

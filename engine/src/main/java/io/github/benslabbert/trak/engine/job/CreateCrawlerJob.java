@@ -9,6 +9,8 @@ import io.github.benslabbert.trak.entity.rabbit.event.CreateCrawlerEventFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,7 @@ import java.util.UUID;
 
 @Slf4j
 @Component
-public class CreateCrawlerJob implements Runnable {
+public class CreateCrawlerJob extends PageOverAll<Seller> implements Runnable {
 
   private final RabbitTemplate rabbitTemplate;
   private final CrawlerService crawlerService;
@@ -42,34 +44,45 @@ public class CreateCrawlerJob implements Runnable {
   @Scheduled(initialDelay = 0L, fixedDelay = 5000L)
   public void run() {
 
-    for (Seller seller : sellerService.findAll()) {
-
-      Optional<Crawler> crawler = crawlerService.findBySeller(seller);
-
-      if (crawler.isPresent()) {
-
-        long lastProductId = crawler.get().getLastId();
-
-        for (int i = 0; i < 10; i ++){
-
-          String requestId = UUID.randomUUID().toString();
-
-          log.info("{}: Creating event", requestId);
-
-          CrawlerEvent crawlerEvent =
-                  CreateCrawlerEventFactory.createProductEvent(requestId, seller, lastProductId++);
-
-          rabbitTemplate.convertAndSend(queue.getName(), crawlerEvent);
-        }
-
-        crawler.get().setLastId(lastProductId);
-        crawlerService.save(crawler.get());
-
-      } else {
-        log.warn("No crawler for sellerId: {}", seller.getId());
-      }
+    try {
+      pageOverAll(sellerService.findAll(PageRequest.of(0, 10)));
+    } catch (Exception e) {
+      log.debug("General exception", e);
     }
 
     log.debug("Finished job");
+  }
+
+  @Override
+  Page<Seller> nextPage(Page<Seller> page) {
+    return sellerService.findAll(page.nextPageable());
+  }
+
+  @Override
+  void processItem(Seller seller) {
+
+    Optional<Crawler> crawler = crawlerService.findBySeller(seller);
+
+    if (crawler.isPresent()) {
+
+      long lastProductId = crawler.get().getLastId();
+
+      for (int i = 0; i < 10; i++) {
+
+        String requestId = UUID.randomUUID().toString();
+        log.info("{}: Creating event", requestId);
+
+        CrawlerEvent crawlerEvent =
+            CreateCrawlerEventFactory.createProductEvent(requestId, seller, lastProductId++);
+
+        rabbitTemplate.convertAndSend(queue.getName(), crawlerEvent);
+      }
+
+      crawler.get().setLastId(lastProductId);
+      crawlerService.save(crawler.get());
+
+    } else {
+      log.warn("No crawler for sellerId: {}", seller.getId());
+    }
   }
 }
