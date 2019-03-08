@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -65,7 +66,7 @@ public class ProductServiceImplTest {
 
     Seller seller = sellerRepo.findAll().get(0);
 
-    Iterable<Product> all = service.findAll(seller);
+    Iterable<Product> all = service.findAll(seller, PageRequest.of(0, 10));
 
     assertNotNull(all);
 

@@ -39,7 +39,7 @@ public class CreateCrawlerJob implements Runnable {
 
   @Async
   @Override
-  @Scheduled(initialDelay = 0L, fixedDelay = 1000L)
+  @Scheduled(initialDelay = 0L, fixedDelay = 5000L)
   public void run() {
 
     for (Seller seller : sellerService.findAll()) {
@@ -48,20 +48,22 @@ public class CreateCrawlerJob implements Runnable {
 
       if (crawler.isPresent()) {
 
-        String requestId = UUID.randomUUID().toString();
-
-        log.info("{}: Creating event", requestId);
-
         long lastProductId = crawler.get().getLastId();
 
-        CrawlerEvent crawlerEvent =
-            CreateCrawlerEventFactory.createProductEvent(requestId, seller, lastProductId);
+        for (int i = 0; i < 10; i ++){
 
-        crawler.get().setLastId(++lastProductId);
+          String requestId = UUID.randomUUID().toString();
 
+          log.info("{}: Creating event", requestId);
+
+          CrawlerEvent crawlerEvent =
+                  CreateCrawlerEventFactory.createProductEvent(requestId, seller, lastProductId++);
+
+          rabbitTemplate.convertAndSend(queue.getName(), crawlerEvent);
+        }
+
+        crawler.get().setLastId(lastProductId);
         crawlerService.save(crawler.get());
-
-        rabbitTemplate.convertAndSend(queue.getName(), crawlerEvent);
 
       } else {
         log.warn("No crawler for sellerId: {}", seller.getId());

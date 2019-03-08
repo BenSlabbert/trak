@@ -63,4 +63,9 @@ public class BrandServiceImpl implements BrandService {
       return findByNameEquals(name);
     }
   }
+
+  @Override
+  public Optional<Brand> findById(long id) {
+    return repo.findById(id);
+  }
 }

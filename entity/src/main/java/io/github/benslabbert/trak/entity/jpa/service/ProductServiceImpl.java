@@ -1,5 +1,6 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.repo.ProductRepo;
@@ -54,8 +55,8 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Iterable<Product> findAll(Seller seller) {
-    return repo.findAllBySellerEquals(seller);
+  public Page<Product> findAll(Brand brand, Pageable pageable) {
+    return repo.findAllByBrandEquals(brand, pageable);
   }
 
   @Override

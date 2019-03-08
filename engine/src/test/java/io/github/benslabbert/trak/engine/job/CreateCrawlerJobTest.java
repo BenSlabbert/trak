@@ -47,6 +47,6 @@ public class CreateCrawlerJobTest {
 
     Long lastId = crawler.getLastId();
 
-    assertEquals(2L, lastId.longValue());
+    assertEquals(11L, lastId.longValue());
   }
 }

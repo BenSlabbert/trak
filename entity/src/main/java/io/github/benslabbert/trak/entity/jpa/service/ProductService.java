@@ -1,5 +1,6 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import org.springframework.data.domain.Page;
@@ -17,7 +18,7 @@ public interface ProductService {
 
   Page<Product> findAll(Pageable pageable);
 
-  Iterable<Product> findAll(Seller seller);
+  Page<Product> findAll(Brand brand, Pageable pageable);
 
   Page<Product> findAll(Seller seller, Pageable pageable);
 }

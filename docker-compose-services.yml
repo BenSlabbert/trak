@@ -37,37 +37,6 @@ services:
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
 
-  engine:
-    build: engine/
-    image: benjaminslabbert/trak_engine:0.0.0
-    restart: always
-    mem_limit: 250m
-    depends_on:
-      - rds
-      - rabbit
-
-  worker:
-    build: worker/
-    image: benjaminslabbert/trak_worker:0.0.0
-    restart: always
-    mem_limit: 250m
-    depends_on:
-      - rds
-      - rabbit
-      - engine
-
-  search:
-    build: search/
-    image: benjaminslabbert/trak_search:0.0.0
-    restart: always
-    mem_limit: 250m
-    ports:
-      - 8081:8080
-    depends_on:
-      - rds
-      - rabbit
-      - es
-
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
     restart: always
@@ -80,21 +49,21 @@ services:
       - "discovery.type=single-node"
       - "transport.host=es"
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:6.4.1
-    restart: always
-    ports:
-      - 5601:5601
-    volumes:
-      - "kibana-data:/usr/share/kibana"
-    environment:
-      SERVER_NAME: kibana.local
-      ELASTICSEARCH_URL: http://es:9200
-    depends_on:
-      - es
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:6.4.1
+#    restart: always
+#    ports:
+#      - 5601:5601
+#    volumes:
+#      - "kibana-data:/usr/share/kibana"
+#    environment:
+#      SERVER_NAME: kibana.local
+#      ELASTICSEARCH_URL: http://es:9200
+#    depends_on:
+#      - es
 
   logstash:
-    build: ./logstash-conf/
+    build: ./logstash-conf-local/
     image: benjaminslabbert/trak_logstash:0.0.0
     network_mode: "host"
     ports:
