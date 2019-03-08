@@ -43,7 +43,7 @@ public class ProductServiceImplTest {
   @Test
   public void saveTest() {
 
-    Product product = service.save(null);
+    Product product = service.save(Product.builder().name("product").build());
 
     assertNotNull(product);
     assertEquals("product", product.getName());
