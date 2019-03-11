@@ -47,18 +47,18 @@ services:
       - "discovery.type=single-node"
       - "transport.host=es"
 
-  #  kibana:
-  #    image: docker.elastic.co/kibana/kibana:6.4.1
-  #    restart: always
-  #    ports:
-  #      - 5601:5601
-  #    volumes:
-  #      - "kibana-data:/usr/share/kibana"
-  #    environment:
-  #      SERVER_NAME: kibana.local
-  #      ELASTICSEARCH_URL: http://es:9200
-  #    depends_on:
-  #      - es
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:6.4.1
+#    restart: always
+#    ports:
+#      - 5601:5601
+#    volumes:
+#      - "kibana-data:/usr/share/kibana"
+#    environment:
+#      SERVER_NAME: kibana.local
+#      ELASTICSEARCH_URL: http://es:9200
+#    depends_on:
+#      - es
 
   logstash:
     build: ./logstash-conf-local/
