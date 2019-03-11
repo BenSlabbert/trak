@@ -6,11 +6,11 @@ services:
     image: rabbitmq
     hostname: rabbit
     restart: always
-    mem_limit: 250m
+    mem_limit: 600m
     ports:
       - 5672:5672
     volumes:
-      - "rabbit-data:/var/lib/rabbitmq"
+      - rabbit-data:/var/lib/rabbitmq
 
   redis:
     image: redis:5-alpine
@@ -27,8 +27,8 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - "rds-data:/var/lib/mysql"
-    mem_limit: 250m
+      - rds-data:/var/lib/mysql
+    mem_limit: 600m
     environment:
       - MYSQL_ROOT_PASSWORD=my-secret-pw
       - MYSQL_DATABASE=trak
@@ -39,7 +39,7 @@ services:
     build: engine/
     image: benjaminslabbert/trak_engine:0.0.0
     restart: always
-    mem_limit: 250m
+    mem_limit: 600m
     depends_on:
       - rds
       - rabbit
@@ -48,7 +48,7 @@ services:
     build: worker/
     image: benjaminslabbert/trak_worker:0.0.0
     restart: always
-    mem_limit: 250m
+    mem_limit: 600m
     depends_on:
       - rds
       - rabbit
@@ -68,15 +68,35 @@ services:
 
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-    restart: always
-    ports:
-      - 9200:9200
-      - 9300:9300
-    volumes:
-      - "es-data:/usr/share/elasticsearch/data"
     environment:
-      - "discovery.type=single-node"
-      - "transport.host=es"
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=es"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+
+  es-slave-1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=es"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data-slave-1:/usr/share/elasticsearch/data
 
   kibana:
     image: docker.elastic.co/kibana/kibana:6.4.1
@@ -84,7 +104,7 @@ services:
     ports:
       - 5601:5601
     volumes:
-      - "kibana-data:/usr/share/kibana"
+      - kibana-data:/usr/share/kibana
     environment:
       SERVER_NAME: kibana.local
       ELASTICSEARCH_URL: http://es:9200
@@ -94,7 +114,6 @@ services:
   logstash:
     build: ./logstash-conf/
     image: benjaminslabbert/trak_logstash:0.0.0
-    network_mode: "host"
     ports:
       - 9600:9600
     restart: always
@@ -107,6 +126,8 @@ volumes:
   rds-data:
     driver: local
   es-data:
+    driver: local
+  es-data-slave-1:
     driver: local
   kibana-data:
     driver: local

@@ -27,10 +27,10 @@ public abstract class RetryPersist<T, ID> {
       return repo.saveAndFlush(object);
     } catch (OptimisticLockException e) {
       log.warn("OptimisticLockException while saving product! Retrying ...");
-      return retry(object, retry++, repo);
+      return retry(object, ++retry, repo);
     } catch (ObjectOptimisticLockingFailureException e) {
       log.warn("ObjectOptimisticLockingFailureException while saving product! Retrying ...");
-      return retry(object, retry++, repo);
+      return retry(object, ++retry, repo);
     }
   }
 }

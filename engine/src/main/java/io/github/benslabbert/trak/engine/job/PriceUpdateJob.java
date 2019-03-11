@@ -39,7 +39,7 @@ public class PriceUpdateJob extends PageOverAll<Seller> implements Runnable {
 
   @Async
   @Override
-  @Scheduled(cron = "0 0/2 * * * ?")
+  @Scheduled(cron = "0 0 0/1 * * ?")
   public void run() {
 
     log.debug("Starting job");

@@ -62,7 +62,7 @@ services:
 
   logstash:
     build: ./logstash-conf-local/
-    image: benjaminslabbert/trak_logstash:0.0.0
+    image: benjaminslabbert/trak_logstash_local:0.0.0
     network_mode: "host"
     ports:
       - 9600:9600
