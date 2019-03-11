@@ -3,6 +3,7 @@ FROM openjdk:11-jre
 VOLUME /tmp
 
 EXPOSE 8080
+EXPOSE 50051
 
 COPY target/api.jar api.jar
 
