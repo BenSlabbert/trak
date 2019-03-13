@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker-compose build --parallel --memory 4096 --compress
+docker-compose build --parallel --compress

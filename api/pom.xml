@@ -7,7 +7,7 @@
 
   <groupId>io.github.benslabbert.trak</groupId>
   <artifactId>api</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <name>api</name>
@@ -92,13 +92,13 @@
     <dependency>
       <groupId>io.github.benslabbert.trak</groupId>
       <artifactId>entity</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
 
     <dependency>
       <groupId>io.github.benslabbert.trak</groupId>
       <artifactId>grpc</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
 
     <!-- SPRING -->

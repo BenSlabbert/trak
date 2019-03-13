@@ -5,7 +5,7 @@
 
   <groupId>io.github.benslabbert.trak</groupId>
   <artifactId>worker</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <name>worker</name>
@@ -90,7 +90,7 @@
     <dependency>
       <groupId>io.github.benslabbert.trak</groupId>
       <artifactId>entity</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
 
     <dependency>

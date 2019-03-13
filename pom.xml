@@ -5,7 +5,7 @@
 
   <groupId>io.github.benslabbert.trak</groupId>
   <artifactId>trak-modules</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>pom</packaging>
 
   <modules>
@@ -32,7 +32,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.2</version>
+          <version>0.8.3</version>
         </plugin>
       </plugins>
     </pluginManagement>

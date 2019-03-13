@@ -37,18 +37,24 @@ services:
 
   engine:
     build: engine/
-    image: benjaminslabbert/trak_engine:0.0.0
+    image: benjaminslabbert/trak_engine:1.0.0
     restart: always
     mem_limit: 600m
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
     depends_on:
       - rds
       - rabbit
 
   worker:
     build: worker/
-    image: benjaminslabbert/trak_worker:0.0.0
+    image: benjaminslabbert/trak_worker:1.0.0
     restart: always
     mem_limit: 600m
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
     depends_on:
       - rds
       - rabbit
@@ -56,11 +62,15 @@ services:
 
   search:
     build: search/
-    image: benjaminslabbert/trak_search:0.0.0
+    image: benjaminslabbert/trak_search:1.0.0
     restart: always
     mem_limit: 250m
     ports:
       - 8081:8080
+      - 50052:50052
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
     depends_on:
       - rds
       - rabbit
@@ -68,11 +78,15 @@ services:
 
   api:
     build: api/
-    image: benjaminslabbert/trak_api:0.0.0
+    image: benjaminslabbert/trak_api:1.0.0
     restart: always
     mem_limit: 250m
     ports:
       - 8082:8080
+      - 50051:50051
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
     depends_on:
       - rds
       - rabbit
@@ -124,7 +138,7 @@ services:
 
   logstash:
     build: ./logstash-conf/
-    image: benjaminslabbert/trak_logstash:0.0.0
+    image: benjaminslabbert/trak_logstash:1.0.0
     ports:
       - 9600:9600
     restart: always
@@ -132,7 +146,7 @@ services:
       - es
 
   ui:
-    image: benjaminslabbert/trak_ui:latest
+    image: benjaminslabbert/trak_ui:1.0.0
     ports:
       - 3000:3000
     mem_limit: 250m
@@ -140,6 +154,7 @@ services:
       - search
       - api
 
+# change to overlay2 driver
 volumes:
   rabbit-data:
     driver: local

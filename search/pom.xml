@@ -6,7 +6,7 @@
 
   <groupId>io.github.benslabbert.trak</groupId>
   <artifactId>search</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <name>search</name>
@@ -91,7 +91,7 @@
     <dependency>
       <groupId>io.github.benslabbert.trak</groupId>
       <artifactId>grpc</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
 
     <dependency>

@@ -2,7 +2,6 @@ FROM openjdk:11-jre
 
 VOLUME /tmp
 
-EXPOSE 8080
 EXPOSE 50052
 
 COPY target/search.jar search.jar
