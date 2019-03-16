@@ -4,7 +4,6 @@ import io.github.benslabbert.trak.entity.jpa.Crawler;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.CrawlerService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
-import io.github.benslabbert.trak.entity.rabbit.event.CrawlerEvent;
 import io.github.benslabbert.trak.entity.rabbit.event.CreateCrawlerEventFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
@@ -72,10 +71,9 @@ public class CreateCrawlerJob extends PageOverAll<Seller> implements Runnable {
         String requestId = UUID.randomUUID().toString();
         log.info("{}: Creating event", requestId);
 
-        CrawlerEvent crawlerEvent =
-            CreateCrawlerEventFactory.createProductEvent(requestId, seller, lastProductId++);
-
-        rabbitTemplate.convertAndSend(queue.getName(), crawlerEvent);
+        rabbitTemplate.convertAndSend(
+            queue.getName(),
+            CreateCrawlerEventFactory.createProductEvent(requestId, seller, lastProductId++));
       }
 
       crawler.get().setLastId(lastProductId);
