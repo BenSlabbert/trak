@@ -1,4 +1,4 @@
-package io.github.benslabbert.trak.entity.rabbit.event;
+package io.github.benslabbert.trak.entity.rabbit.event.crawler;
 
 import io.github.benslabbert.trak.entity.jpa.Seller;
 

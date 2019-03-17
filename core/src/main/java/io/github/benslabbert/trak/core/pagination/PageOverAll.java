@@ -1,10 +1,10 @@
-package io.github.benslabbert.trak.engine.job;
+package io.github.benslabbert.trak.core.pagination;
 
 import org.springframework.data.domain.Page;
 
-abstract class PageOverAll<T> {
+public abstract class PageOverAll<T> {
 
-  void pageOverAll(Page<T> page) {
+  protected void pageOverAll(Page<T> page) {
 
     while (page.hasContent()) {
 
@@ -20,7 +20,7 @@ abstract class PageOverAll<T> {
     }
   }
 
-  abstract Page<T> nextPage(Page<T> page);
+  protected abstract Page<T> nextPage(Page<T> page);
 
-  abstract void processItem(T item);
+  protected abstract void processItem(T item);
 }

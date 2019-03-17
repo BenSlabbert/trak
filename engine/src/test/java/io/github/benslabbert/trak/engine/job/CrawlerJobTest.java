@@ -4,7 +4,7 @@ import io.github.benslabbert.trak.entity.jpa.Crawler;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.CrawlerService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
-import io.github.benslabbert.trak.entity.rabbit.event.CrawlerEvent;
+import io.github.benslabbert.trak.entity.rabbit.event.crawler.CrawlerEvent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -24,14 +24,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 
 @RunWith(SpringRunner.class)
-public class CreateCrawlerJobTest {
+public class CrawlerJobTest {
 
   @Mock private RabbitTemplate rabbitTemplate;
   @Mock private CrawlerService crawlerService;
   @Mock private SellerService sellerService;
   @Mock private Queue queue;
 
-  @InjectMocks private CreateCrawlerJob job;
+  @InjectMocks private CrawlerJob job;
 
   @Test
   public void runTest() {

@@ -11,8 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import static io.github.benslabbert.trak.entity.rabbit.Queue.CRAWLER_QUEUE;
-import static io.github.benslabbert.trak.entity.rabbit.Queue.PRODUCT_QUEUE;
+import static io.github.benslabbert.trak.entity.rabbit.Queue.*;
 
 @Slf4j
 @EnableAsync
@@ -52,5 +51,10 @@ public class EngineApplication {
   @Bean
   public Queue productQueue() {
     return new Queue(PRODUCT_QUEUE, true, false, false);
+  }
+
+  @Bean
+  public Queue priceQueue() {
+    return new Queue(PRICE_QUEUE, true, false, false);
   }
 }

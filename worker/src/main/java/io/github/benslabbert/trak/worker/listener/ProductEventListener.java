@@ -2,7 +2,7 @@ package io.github.benslabbert.trak.worker.listener;
 
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
-import io.github.benslabbert.trak.entity.rabbit.event.PriceUpdateEvent;
+import io.github.benslabbert.trak.entity.rabbit.event.price.update.PriceUpdateEvent;
 import io.github.benslabbert.trak.worker.response.ProductResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -27,7 +27,7 @@ public class ProductEventListener extends ProductRequest {
   @RabbitHandler
   public void receive(PriceUpdateEvent priceUpdateEvent) {
 
-    log.debug(priceUpdateEvent.getRequestId());
+    log.debug("{}: processing update price event", priceUpdateEvent.getRequestId());
 
     Optional<ProductResponse> productResponse =
         getProductResponse(priceUpdateEvent.getProduct().getApiEndpoint());

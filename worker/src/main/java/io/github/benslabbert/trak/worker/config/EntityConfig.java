@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "io.github.benslabbert.trak.entity.jpa.repo")
 @EntityScan(basePackages = "io.github.benslabbert.trak.entity.jpa")
+@EnableJpaRepositories(basePackages = "io.github.benslabbert.trak.entity.jpa.repo")
 @ComponentScan(basePackages = "io.github.benslabbert.trak.entity.jpa.service")
 public class EntityConfig {}

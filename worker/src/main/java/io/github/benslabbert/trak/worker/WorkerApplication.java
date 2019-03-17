@@ -1,7 +1,6 @@
 package io.github.benslabbert.trak.worker;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
@@ -14,8 +13,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import static io.github.benslabbert.trak.entity.rabbit.Queue.CRAWLER_QUEUE;
 
 @Slf4j
 @EnableAsync
@@ -45,11 +42,6 @@ public class WorkerApplication {
     executor.initialize();
 
     return executor;
-  }
-
-  @Bean
-  public Queue createCrawlerQueue() {
-    return new Queue(CRAWLER_QUEUE, true, false, false);
   }
 
   @Bean

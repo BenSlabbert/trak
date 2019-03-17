@@ -1,4 +1,4 @@
-version: '2.2'
+version: '2.4'
 
 services:
 
@@ -6,7 +6,7 @@ services:
     image: rabbitmq
     hostname: rabbit
     restart: always
-    mem_limit: 250m
+    mem_limit: 300m
     ports:
       - 5672:5672
     volumes:
@@ -17,7 +17,7 @@ services:
     restart: always
     ports:
       - 6379:6379
-    mem_limit: 600m
+    mem_limit: 300m
     volumes:
       - redis-data:/data
 
@@ -28,7 +28,7 @@ services:
       - 3306:3306
     volumes:
       - rds-data:/var/lib/mysql
-    mem_limit: 250m
+    mem_limit: 300m
     environment:
       - MYSQL_ROOT_PASSWORD=my-secret-pw
       - MYSQL_DATABASE=trak
@@ -43,22 +43,23 @@ services:
       - 9300:9300
     volumes:
       - es-data:/usr/share/elasticsearch/data
+    mem_limit: 1024m
     environment:
       - "discovery.type=single-node"
       - "transport.host=es"
 
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:6.4.1
-#    restart: always
-#    ports:
-#      - 5601:5601
-#    volumes:
-#      - "kibana-data:/usr/share/kibana"
-#    environment:
-#      SERVER_NAME: kibana.local
-#      ELASTICSEARCH_URL: http://es:9200
-#    depends_on:
-#      - es
+  #  kibana:
+  #    image: docker.elastic.co/kibana/kibana:6.4.1
+  #    restart: always
+  #    ports:
+  #      - 5601:5601
+  #    volumes:
+  #      - "kibana-data:/usr/share/kibana"
+  #    environment:
+  #      SERVER_NAME: kibana.local
+  #      ELASTICSEARCH_URL: http://es:9200
+  #    depends_on:
+  #      - es
 
   logstash:
     build: ./logstash-conf-local/
@@ -67,8 +68,15 @@ services:
     ports:
       - 9600:9600
     restart: always
+    mem_limit: 1024m
     depends_on:
       - es
+
+  ui:
+    image: benjaminslabbert/trak_ui:1.0.0
+    ports:
+      - 3000:3000
+    mem_limit: 250m
 
 volumes:
   rabbit-data:
@@ -81,5 +89,3 @@ volumes:
     driver: local
   redis-data:
     driver: local
-
-# todo add trak-ui container

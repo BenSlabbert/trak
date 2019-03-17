@@ -17,4 +17,6 @@ public interface PriceService {
   Optional<Price> findLatestByProductId(long productId);
 
   List<Price> findAllByCreatedGreaterThan(long productId, Date created);
+
+  void delete(long id);
 }

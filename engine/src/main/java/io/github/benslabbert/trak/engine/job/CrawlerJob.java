@@ -1,10 +1,11 @@
 package io.github.benslabbert.trak.engine.job;
 
+import io.github.benslabbert.trak.core.pagination.PageOverAll;
 import io.github.benslabbert.trak.entity.jpa.Crawler;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.CrawlerService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
-import io.github.benslabbert.trak.entity.rabbit.event.CreateCrawlerEventFactory;
+import io.github.benslabbert.trak.entity.rabbit.event.crawler.CrawlerEventFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -19,14 +20,14 @@ import java.util.UUID;
 
 @Slf4j
 @Component
-public class CreateCrawlerJob extends PageOverAll<Seller> implements Runnable {
+public class CrawlerJob extends PageOverAll<Seller> implements Runnable {
 
   private final RabbitTemplate rabbitTemplate;
   private final CrawlerService crawlerService;
   private final SellerService sellerService;
   private final Queue queue;
 
-  public CreateCrawlerJob(
+  public CrawlerJob(
       RabbitTemplate rabbitTemplate,
       CrawlerService crawlerService,
       SellerService sellerService,
@@ -43,6 +44,8 @@ public class CreateCrawlerJob extends PageOverAll<Seller> implements Runnable {
   @Scheduled(initialDelay = 0L, fixedDelay = 5000L)
   public void run() {
 
+    log.info("Starting job");
+
     try {
       pageOverAll(sellerService.findAll(PageRequest.of(0, 10)));
     } catch (Exception e) {
@@ -53,12 +56,12 @@ public class CreateCrawlerJob extends PageOverAll<Seller> implements Runnable {
   }
 
   @Override
-  Page<Seller> nextPage(Page<Seller> page) {
+  protected Page<Seller> nextPage(Page<Seller> page) {
     return sellerService.findAll(page.nextPageable());
   }
 
   @Override
-  void processItem(Seller seller) {
+  protected void processItem(Seller seller) {
 
     Optional<Crawler> crawler = crawlerService.findBySeller(seller);
 
@@ -73,7 +76,7 @@ public class CreateCrawlerJob extends PageOverAll<Seller> implements Runnable {
 
         rabbitTemplate.convertAndSend(
             queue.getName(),
-            CreateCrawlerEventFactory.createProductEvent(requestId, seller, lastProductId++));
+            CrawlerEventFactory.createCrawlerEvent(requestId, seller, lastProductId++));
       }
 
       crawler.get().setLastId(lastProductId);

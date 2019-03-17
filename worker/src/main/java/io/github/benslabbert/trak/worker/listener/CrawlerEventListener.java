@@ -5,7 +5,7 @@ import io.github.benslabbert.trak.entity.jpa.service.BrandService;
 import io.github.benslabbert.trak.entity.jpa.service.CategoryService;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
-import io.github.benslabbert.trak.entity.rabbit.event.CrawlerEvent;
+import io.github.benslabbert.trak.entity.rabbit.event.crawler.CrawlerEvent;
 import io.github.benslabbert.trak.worker.response.ProductResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -57,8 +57,7 @@ public class CrawlerEventListener extends ProductRequest {
   private void findNewProduct(Seller seller, long plId) {
 
     try {
-      String apiUrl =
-          "https://api.takealot.com/rest/v-1-8-0/product-details/PLID" + plId + "?platform=desktop";
+      String apiUrl = getApiUrl(plId);
 
       Optional<ProductResponse> response = getProductResponse(apiUrl);
 
@@ -66,38 +65,60 @@ public class CrawlerEventListener extends ProductRequest {
 
       Brand brand = brandService.findByNameEquals(response.get().getProductBrand());
 
-      List<Category> categories =
-          categoryService.createCategories(
-              response.get().getCategories().stream()
-                  .filter(Objects::nonNull)
-                  .collect(Collectors.toList()));
-
-      Product product =
-          productService.save(
-              Product.builder()
-                  .name(response.get().getProductName())
-                  .url(response.get().getProductUrl().trim())
-                  .apiEndpoint(apiUrl)
-                  .seller(seller)
-                  .brand(brand)
-                  .categories(categories)
-                  .plId(plId)
-                  .sku(response.get().getSKU())
-                  .images(
-                      response.get().getImageUrls().stream()
-                          .map(u -> ProductImage.builder().url(u).build())
-                          .collect(Collectors.toList()))
-                  .build());
-
-      priceService.save(
-          Price.builder()
-              .productId(product.getId())
-              .listedPrice(response.get().getListedPrice())
-              .currentPrice(response.get().getCurrentPrice())
-              .build());
+      List<Category> categories = createCategories(response.get());
+      Product product = createProduct(seller, plId, apiUrl, response.get(), brand, categories);
+      createPrice(response.get(), product);
 
     } catch (Exception e) {
       log.debug("General exception", e);
     }
+  }
+
+  private String getApiUrl(long plId) {
+    return "https://api.takealot.com/rest/v-1-8-0/product-details/PLID"
+        + plId
+        + "?platform=desktop";
+  }
+
+  private void createPrice(ProductResponse response, Product product) {
+    priceService.save(
+        Price.builder()
+            .productId(product.getId())
+            .listedPrice(response.getListedPrice())
+            .currentPrice(response.getCurrentPrice())
+            .build());
+  }
+
+  private Product createProduct(
+      Seller seller,
+      long plId,
+      String apiUrl,
+      ProductResponse response,
+      Brand brand,
+      List<Category> categories) {
+
+    return productService.save(
+        Product.builder()
+            .name(response.getProductName())
+            .url(response.getProductUrl().trim())
+            .apiEndpoint(apiUrl)
+            .seller(seller)
+            .brand(brand)
+            .categories(categories)
+            .plId(plId)
+            .sku(response.getSKU())
+            .images(getImages(response))
+            .build());
+  }
+
+  private List<ProductImage> getImages(ProductResponse response) {
+    return response.getImageUrls().stream()
+        .map(u -> ProductImage.builder().url(u).build())
+        .collect(Collectors.toList());
+  }
+
+  private List<Category> createCategories(ProductResponse response) {
+    return categoryService.createCategories(
+        response.getCategories().stream().filter(Objects::nonNull).collect(Collectors.toList()));
   }
 }

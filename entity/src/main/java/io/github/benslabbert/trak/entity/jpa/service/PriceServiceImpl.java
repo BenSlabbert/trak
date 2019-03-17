@@ -56,4 +56,11 @@ public class PriceServiceImpl extends RetryPersist<Price, Long> implements Price
   public List<Price> findAllByCreatedGreaterThan(long productId, Date created) {
     return repo.findAllByProductIdEqualsAndCreatedGreaterThanEqual(productId, created);
   }
+
+  @Override
+  public void delete(long id) {
+
+    if (repo.existsById(id)) repo.deleteById(id);
+    else log.warn("No ID for price: {}", id);
+  }
 }

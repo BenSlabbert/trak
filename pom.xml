@@ -9,6 +9,7 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>core</module>
     <module>engine</module>
     <module>entity</module>
     <module>worker</module>
