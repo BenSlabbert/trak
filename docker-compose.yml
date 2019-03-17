@@ -37,7 +37,7 @@ services:
 
   engine:
     build: engine/
-    image: benjaminslabbert/trak_engine:1.0.0
+    image: benjaminslabbert/trak_engine:1.0.1
     restart: always
     mem_limit: 600m
     environment:
@@ -49,7 +49,7 @@ services:
 
   worker:
     build: worker/
-    image: benjaminslabbert/trak_worker:1.0.0
+    image: benjaminslabbert/trak_worker:1.0.1
     restart: always
     mem_limit: 600m
     environment:
@@ -62,7 +62,7 @@ services:
 
   search:
     build: search/
-    image: benjaminslabbert/trak_search:1.0.0
+    image: benjaminslabbert/trak_search:1.0.1
     restart: always
     mem_limit: 250m
     ports:
@@ -78,7 +78,7 @@ services:
 
   api:
     build: api/
-    image: benjaminslabbert/trak_api:1.0.0
+    image: benjaminslabbert/trak_api:1.0.1
     restart: always
     mem_limit: 250m
     ports:
