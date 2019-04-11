@@ -2,3 +2,8 @@ pipeline:
   batch:
     size: 125
     delay: 50
+
+xpack:
+  monitoring:
+    elasticsearch:
+      url: "http://localhost:9200"

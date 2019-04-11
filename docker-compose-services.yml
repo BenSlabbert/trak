@@ -43,23 +43,25 @@ services:
       - 9300:9300
     volumes:
       - es-data:/usr/share/elasticsearch/data
-    mem_limit: 1024m
+    mem_limit: 1300m
     environment:
       - "discovery.type=single-node"
       - "transport.host=es"
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
 
-  #  kibana:
-  #    image: docker.elastic.co/kibana/kibana:6.4.1
-  #    restart: always
-  #    ports:
-  #      - 5601:5601
-  #    volumes:
-  #      - "kibana-data:/usr/share/kibana"
-  #    environment:
-  #      SERVER_NAME: kibana.local
-  #      ELASTICSEARCH_URL: http://es:9200
-  #    depends_on:
-  #      - es
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.4.1
+    restart: always
+    ports:
+      - 5601:5601
+    volumes:
+      - kibana-data:/usr/share/kibana
+    environment:
+      SERVER_NAME: kibana.local
+      ELASTICSEARCH_URL: http://es:9200
+    mem_limit: 700m
+    depends_on:
+      - es
 
   logstash:
     build: ./logstash-conf-local/
@@ -68,7 +70,9 @@ services:
     ports:
       - 9600:9600
     restart: always
-    mem_limit: 1024m
+    mem_limit: 700m
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     depends_on:
       - es
 
