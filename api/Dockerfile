@@ -8,4 +8,9 @@ COPY target/api.jar api.jar
 
 ENV SPRING_DATASOURCE_URL="jdbc:mysql://rds/trak"
 
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom", "-Dspring.profiles.active=compose","-jar","api.jar"]
+ENV JAVA_OPTS="-XX:+UnlockExperimentalVMOptions \
+               -XX:+UseCGroupMemoryLimitForHeap \
+               -XX:+UseG1GC \
+               -XshowSettings:vm"
+
+ENTRYPOINT echo $JAVA_OPTS && exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=compose -jar ./api.jar

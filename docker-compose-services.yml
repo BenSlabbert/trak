@@ -43,7 +43,6 @@ services:
       - 9300:9300
     volumes:
       - es-data:/usr/share/elasticsearch/data
-    mem_limit: 1300m
     environment:
       - "discovery.type=single-node"
       - "transport.host=es"
@@ -59,18 +58,15 @@ services:
     environment:
       SERVER_NAME: kibana.local
       ELASTICSEARCH_URL: http://es:9200
-    mem_limit: 700m
     depends_on:
       - es
 
   logstash:
-    build: ./logstash-conf-local/
-    image: benjaminslabbert/trak_logstash_local:0.0.0
-    network_mode: "host"
+    build: ./logstash-conf/
+    image: benjaminslabbert/trak_logstash:1.0.0
     ports:
       - 9600:9600
     restart: always
-    mem_limit: 700m
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     depends_on:
