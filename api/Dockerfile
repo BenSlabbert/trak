@@ -9,7 +9,6 @@ COPY target/api.jar api.jar
 ENV SPRING_DATASOURCE_URL="jdbc:mysql://rds/trak"
 
 ENV JAVA_OPTS="-XX:+UnlockExperimentalVMOptions \
-               -XX:+UseCGroupMemoryLimitForHeap \
                -XX:+UseG1GC \
                -XshowSettings:vm"
 
