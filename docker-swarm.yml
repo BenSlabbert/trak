@@ -11,6 +11,7 @@ services:
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+      - "JAVA_OPTS=-Xms256m -Xmx256m"
     depends_on:
       - rds
       - rabbit
@@ -30,19 +31,13 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 250M
-        reservations:
-          cpus: '0.25'
-          memory: 100M
 
   worker:
     image: benjaminslabbert/trak_worker:1.0.2
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+      - "JAVA_OPTS=-Xms256m -Xmx256m"
     depends_on:
       - rds
       - rabbit
@@ -63,13 +58,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 250M
-        reservations:
-          cpus: '0.25'
-          memory: 100M
 
   search:
     image: benjaminslabbert/trak_search:1.0.2
@@ -283,7 +271,6 @@ services:
 
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-    restart: always
     ports:
       - 9200:9200
       - 9300:9300
@@ -319,7 +306,6 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:6.4.1
-    restart: always
     ports:
       - 5601:5601
     volumes:
@@ -358,7 +344,6 @@ services:
     image: benjaminslabbert/trak_logstash:1.0.2
     ports:
       - 9600:9600
-    restart: always
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     depends_on:
