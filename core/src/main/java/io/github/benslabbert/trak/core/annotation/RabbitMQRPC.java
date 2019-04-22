@@ -7,5 +7,5 @@ import java.lang.annotation.*;
 @Documented
 public @interface RabbitMQRPC {
 
-    String message() default "RabbitMQ RPC method";
+  String message() default "RabbitMQ RPC method";
 }

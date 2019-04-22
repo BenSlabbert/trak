@@ -1,18 +1,17 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import static io.github.benslabbert.trak.core.cache.CacheNames.CRAWLER_CACHE;
+
 import io.github.benslabbert.trak.entity.jpa.Crawler;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.repo.CrawlerRepo;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
-
-import static io.github.benslabbert.trak.core.cache.CacheNames.CRAWLER_CACHE;
 
 @Slf4j
 @Service

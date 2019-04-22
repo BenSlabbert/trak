@@ -21,7 +21,7 @@ public class PriceCleanUpJob extends PageOverAll<Product> implements Runnable {
 
   private final ProductService productService;
   private final RabbitTemplate rabbitTemplate;
-    private final Queue priceQueue;
+  private final Queue priceQueue;
 
   @Async
   @Override
@@ -47,6 +47,6 @@ public class PriceCleanUpJob extends PageOverAll<Product> implements Runnable {
   @Override
   protected void processItem(Product product) {
     rabbitTemplate.convertAndSend(
-            priceQueue.getName(), PriceCleanUpEventFactory.create(product.getId()));
+        priceQueue.getName(), PriceCleanUpEventFactory.create(product.getId()));
   }
 }

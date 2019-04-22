@@ -6,7 +6,7 @@ public abstract class PageOverAll<T> {
 
   protected void pageOverAll(Page<T> page) {
 
-      while (page != null && page.hasContent()) {
+    while (page != null && page.hasContent()) {
 
       for (T t : page.getContent()) {
         processItem(t);

@@ -1,9 +1,8 @@
 package io.github.benslabbert.trak.entity.jpa;
 
-import lombok.*;
-
-import javax.persistence.*;
 import java.io.Serializable;
+import javax.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(schema = Schema.TRAK, name = "seller")

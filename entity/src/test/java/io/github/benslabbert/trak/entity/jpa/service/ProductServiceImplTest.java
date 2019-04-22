@@ -1,5 +1,8 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
+import static org.junit.Assert.*;
+
 import io.github.benslabbert.trak.entity.config.JPATestConfig;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.Seller;
@@ -14,9 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
-import static org.junit.Assert.*;
 
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)

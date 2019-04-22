@@ -7,13 +7,12 @@ import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.crawler.CrawlerEvent;
 import io.github.benslabbert.trak.entity.rabbitmq.event.crawler.CrawlerEventFactory;
+import java.util.UUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.UUID;
 
 @RunWith(SpringRunner.class)
 public class CrawlerEventListenerTest {
@@ -28,15 +27,11 @@ public class CrawlerEventListenerTest {
   @Test
   public void testReceive() {
 
-      Seller seller = Seller.builder()
-              .id(1L)
-              .name("s1")
-              .build();
+    Seller seller = Seller.builder().id(1L).name("s1").build();
 
-      CrawlerEvent event =
-        CrawlerEventFactory.createCrawlerEvent(
-            UUID.randomUUID().toString(), seller, 1L);
+    CrawlerEvent event =
+        CrawlerEventFactory.createCrawlerEvent(UUID.randomUUID().toString(), seller, 1L);
 
-      listener.receive(event);
+    listener.receive(event);
   }
 }

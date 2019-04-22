@@ -9,13 +9,12 @@ import io.github.benslabbert.trak.search.es.service.ESBrandService;
 import io.github.benslabbert.trak.search.es.service.ESCategoryService;
 import io.github.benslabbert.trak.search.es.service.ESProductService;
 import io.grpc.stub.StreamObserver;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -43,7 +42,7 @@ public class SearchGRPC extends SearchServiceGrpc.SearchServiceImplBase {
     log.debug("Searching for brand: {}", request.getSearch());
 
     responseObserver.onNext(
-            buildSearchResponse(brandService.findBrandByNameLike(request.getSearch(), pageable)));
+        buildSearchResponse(brandService.findBrandByNameLike(request.getSearch(), pageable)));
 
     responseObserver.onCompleted();
   }

@@ -14,19 +14,18 @@ import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequestFactor
 import io.github.benslabbert.trak.grpc.*;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
@@ -40,16 +39,16 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
 
   @Override
   public void addProduct(
-          AddProductRequest request, StreamObserver<AddProductResponse> responseObserver) {
+      AddProductRequest request, StreamObserver<AddProductResponse> responseObserver) {
 
     String requestPlId = request.getPlId();
 
     if (StringUtils.isEmpty(requestPlId)) {
       Status status =
-              Status.newBuilder()
-                      .setCode(Code.INVALID_ARGUMENT.getNumber())
-                      .setMessage("PLID not set!")
-                      .build();
+          Status.newBuilder()
+              .setCode(Code.INVALID_ARGUMENT.getNumber())
+              .setMessage("PLID not set!")
+              .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
       responseObserver.onCompleted();
@@ -69,10 +68,10 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
       apiEndpoint = getApiUrl(plId);
     } else {
       Status status =
-              Status.newBuilder()
-                      .setCode(Code.UNKNOWN.getNumber())
-                      .setMessage("Cannot determine if PLID provided is a URL or number")
-                      .build();
+          Status.newBuilder()
+              .setCode(Code.UNKNOWN.getNumber())
+              .setMessage("Cannot determine if PLID provided is a URL or number")
+              .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
       responseObserver.onCompleted();
@@ -84,10 +83,10 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
     if (seller.isEmpty()) {
       log.warn("Failed to find Takealot seller!");
       Status status =
-              Status.newBuilder()
-                      .setCode(Code.INTERNAL.getNumber())
-                      .setMessage("Failed to find Seller")
-                      .build();
+          Status.newBuilder()
+              .setCode(Code.INTERNAL.getNumber())
+              .setMessage("Failed to find Seller")
+              .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
       responseObserver.onCompleted();
@@ -95,8 +94,8 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
     }
 
     Long productId =
-            addProductRPC.addProduct(
-                    AddProductRPCRequestFactory.create(URI.create(apiEndpoint), seller.get(), plId));
+        addProductRPC.addProduct(
+            AddProductRPCRequestFactory.create(URI.create(apiEndpoint), seller.get(), plId));
 
     log.info("Got productId: {}", productId);
     responseObserver.onNext(AddProductResponse.newBuilder().setProductId(productId).build());
@@ -115,8 +114,8 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
 
   private String getApiUrl(long plId) {
     return "https://api.takealot.com/rest/v-1-8-0/product-details/PLID"
-            + plId
-            + "?platform=desktop";
+        + plId
+        + "?platform=desktop";
   }
 
   private boolean isPLID(String plId) {

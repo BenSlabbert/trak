@@ -1,12 +1,11 @@
 package io.github.benslabbert.trak.entity.jpa;
 
+import java.io.Serializable;
+import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
-import java.io.Serializable;
 
 @Entity
 @Table(schema = Schema.TRAK, name = "product_image")

@@ -6,6 +6,7 @@ import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.price.update.PriceUpdateEventFactory;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
@@ -16,8 +17,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -26,7 +25,7 @@ public class PriceUpdateJob extends PageOverAll<Seller> implements Runnable {
   private final ProductService productService;
   private final RabbitTemplate rabbitTemplate;
   private final SellerService sellerService;
-    private final Queue productQueue;
+  private final Queue productQueue;
 
   @Async
   @Override
@@ -57,8 +56,8 @@ public class PriceUpdateJob extends PageOverAll<Seller> implements Runnable {
         log.info("{}: Creating event", requestId);
 
         rabbitTemplate.convertAndSend(
-                productQueue.getName(),
-                PriceUpdateEventFactory.createPriceUpdateEvent(product, requestId));
+            productQueue.getName(),
+            PriceUpdateEventFactory.createPriceUpdateEvent(product, requestId));
       }
 
       if (products.hasNext()) {

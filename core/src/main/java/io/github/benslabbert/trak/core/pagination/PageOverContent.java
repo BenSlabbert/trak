@@ -1,8 +1,7 @@
 package io.github.benslabbert.trak.core.pagination;
 
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public abstract class PageOverContent<T> {
 
@@ -20,7 +19,7 @@ public abstract class PageOverContent<T> {
     }
   }
 
-    protected abstract Page<T> nextPage(Page<T> page);
+  protected abstract Page<T> nextPage(Page<T> page);
 
-    protected abstract void processContent(List<T> content);
+  protected abstract void processContent(List<T> content);
 }

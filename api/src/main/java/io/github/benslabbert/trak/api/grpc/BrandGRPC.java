@@ -9,12 +9,11 @@ import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.grpc.*;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -53,8 +52,8 @@ public class BrandGRPC extends BrandServiceGrpc.BrandServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-        responseObserver.onCompleted();
-        return;
+      responseObserver.onCompleted();
+      return;
     }
 
     Page<Product> all = productService.findAll(brand.get(), PageRequest.of(0, 12));

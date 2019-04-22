@@ -1,5 +1,9 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import io.github.benslabbert.trak.entity.config.JPATestConfig;
 import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.repo.BrandRepo;
@@ -11,10 +15,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)

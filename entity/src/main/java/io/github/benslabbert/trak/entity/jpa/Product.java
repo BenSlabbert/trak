@@ -1,12 +1,11 @@
 package io.github.benslabbert.trak.entity.jpa;
 
+import java.io.Serializable;
+import java.util.List;
+import javax.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.List;
 
 @Entity
 @Table(schema = Schema.TRAK, name = "product")

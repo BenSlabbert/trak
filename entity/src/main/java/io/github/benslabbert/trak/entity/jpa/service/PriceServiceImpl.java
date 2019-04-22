@@ -1,7 +1,12 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import static io.github.benslabbert.trak.core.cache.CacheNames.PRICE_CACHE;
+
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.repo.PriceRepo;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -10,12 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
-import static io.github.benslabbert.trak.core.cache.CacheNames.PRICE_CACHE;
 
 @Slf4j
 @Service
@@ -33,8 +32,8 @@ public class PriceServiceImpl extends RetryPersist<Price, Long> implements Price
 
   @Override
   @Cacheable(
-          value = PRICE_CACHE,
-          key = "#productId + '-' + #pageable.pageSize + '-' + #pageable.pageNumber",
+      value = PRICE_CACHE,
+      key = "#productId + '-' + #pageable.pageSize + '-' + #pageable.pageNumber",
       unless = "#result == null")
   public Page<Price> findAllByProductId(long productId, Pageable pageable) {
     return repo.findAllByProductIdEquals(productId, pageable);
@@ -48,8 +47,8 @@ public class PriceServiceImpl extends RetryPersist<Price, Long> implements Price
 
   @Override
   @Cacheable(
-          value = PRICE_CACHE,
-          key = "#productId + '-' + #created.time",
+      value = PRICE_CACHE,
+      key = "#productId + '-' + #created.time",
       unless = "#result == null")
   public List<Price> findAllByCreatedGreaterThan(long productId, Date created) {
     return repo.findAllByProductIdEqualsAndCreatedGreaterThanEqual(productId, created);

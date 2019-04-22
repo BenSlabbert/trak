@@ -1,10 +1,18 @@
 package io.github.benslabbert.trak.api.service;
 
+import static io.github.benslabbert.trak.core.cache.CacheNames.TAKEALOT_PROMOTION_CACHE;
+
 import io.github.benslabbert.trak.api.model.TakealotDailyDeal;
 import io.github.benslabbert.trak.api.model.TakealotDailyDealProduct;
 import io.github.benslabbert.trak.api.model.TakealotPromotion;
 import io.github.benslabbert.trak.api.model.TakealotPromotionsResponse;
 import io.github.benslabbert.trak.core.model.Promotion;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
@@ -12,85 +20,76 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static io.github.benslabbert.trak.core.cache.CacheNames.TAKEALOT_PROMOTION_CACHE;
-
 @Slf4j
 @Service
 public class TakealotAPIService {
 
-    private RestTemplate restTemplate = new RestTemplate();
+  private RestTemplate restTemplate = new RestTemplate();
 
-    private Optional<Long> getPromotionId(Promotion promotion) {
+  private Optional<Long> getPromotionId(Promotion promotion) {
 
-        Optional<TakealotPromotion> body = getTakealotPromotion();
+    Optional<TakealotPromotion> body = getTakealotPromotion();
 
-        if (body.isEmpty()) return Optional.empty();
+    if (body.isEmpty()) return Optional.empty();
 
-        return body.get().getResponseList().stream()
-                .filter(f -> f.getDisplayName().equals(promotion.getName()))
-                .map(TakealotPromotionsResponse::getPromotionId)
-                .findFirst();
+    return body.get().getResponseList().stream()
+        .filter(f -> f.getDisplayName().equals(promotion.getName()))
+        .map(TakealotPromotionsResponse::getPromotionId)
+        .findFirst();
+  }
+
+  private Optional<TakealotPromotion> getTakealotPromotion() {
+
+    ResponseEntity<TakealotPromotion> resp =
+        restTemplate.exchange(
+            URI.create("https://api.takealot.com/rest/v-1-8-0/promotions?is_bundle_included=True"),
+            HttpMethod.GET,
+            null,
+            TakealotPromotion.class);
+
+    if (!resp.getStatusCode().is2xxSuccessful()) {
+      log.warn("Failed to get Daily Deal promotionId");
+      return Optional.empty();
     }
 
-    private Optional<TakealotPromotion> getTakealotPromotion() {
+    TakealotPromotion body = resp.getBody();
 
-        ResponseEntity<TakealotPromotion> resp =
-                restTemplate.exchange(
-                        URI.create("https://api.takealot.com/rest/v-1-8-0/promotions?is_bundle_included=True"),
-                        HttpMethod.GET,
-                        null,
-                        TakealotPromotion.class);
+    if (Objects.isNull(body) || Objects.isNull(body.getResponseList())) return Optional.empty();
 
-        if (!resp.getStatusCode().is2xxSuccessful()) {
-            log.warn("Failed to get Daily Deal promotionId");
-            return Optional.empty();
-        }
+    return Optional.of(body);
+  }
 
-        TakealotPromotion body = resp.getBody();
+  private List<Long> getPLIDsOnPromotion(long promotionId) {
 
-        if (Objects.isNull(body) || Objects.isNull(body.getResponseList())) return Optional.empty();
+    ResponseEntity<TakealotDailyDeal> resp =
+        restTemplate.exchange(
+            URI.create(
+                "https://api.takealot.com/rest/v-1-8-0/productlines/search?sort=BestSelling%20Descending&rows=100&daily_deals_rows=1000&start=100&detail=listing&filter=Available:true&filter=Promotions:"
+                    + promotionId),
+            HttpMethod.GET,
+            null,
+            TakealotDailyDeal.class);
 
-        return Optional.of(body);
+    if (Objects.isNull(resp.getBody()) || Objects.isNull(resp.getBody().getResults())) {
+      log.warn("Failed to get PLIDs for promotionId: {}", promotionId);
+      return Collections.emptyList();
     }
 
-    private List<Long> getPLIDsOnPromotion(long promotionId) {
+    return resp.getBody().getResults().getProductLines().stream()
+        .map(TakealotDailyDealProduct::getPlId)
+        .collect(Collectors.toList());
+  }
 
-        ResponseEntity<TakealotDailyDeal> resp =
-                restTemplate.exchange(
-                        URI.create(
-                                "https://api.takealot.com/rest/v-1-8-0/productlines/search?sort=BestSelling%20Descending&rows=100&daily_deals_rows=1000&start=100&detail=listing&filter=Available:true&filter=Promotions:"
-                                        + promotionId),
-                        HttpMethod.GET,
-                        null,
-                        TakealotDailyDeal.class);
+  @Cacheable(value = TAKEALOT_PROMOTION_CACHE, key = "#promotion.name")
+  public List<Long> getPLIDsOnPromotion(Promotion promotion) {
 
-        if (Objects.isNull(resp.getBody()) || Objects.isNull(resp.getBody().getResults())) {
-            log.warn("Failed to get PLIDs for promotionId: {}", promotionId);
-            return Collections.emptyList();
-        }
+    Optional<Long> promotionId = getPromotionId(promotion);
 
-        return resp.getBody().getResults().getProductLines().stream()
-                .map(TakealotDailyDealProduct::getPlId)
-                .collect(Collectors.toList());
+    if (promotionId.isEmpty()) {
+      log.warn("No Daily Deals available");
+      return Collections.emptyList();
     }
 
-    @Cacheable(value = TAKEALOT_PROMOTION_CACHE, key = "#promotion.name")
-    public List<Long> getPLIDsOnPromotion(Promotion promotion) {
-
-        Optional<Long> promotionId = getPromotionId(promotion);
-
-        if (promotionId.isEmpty()) {
-            log.warn("No Daily Deals available");
-            return Collections.emptyList();
-        }
-
-        return getPLIDsOnPromotion(promotionId.get());
-    }
+    return getPLIDsOnPromotion(promotionId.get());
+  }
 }

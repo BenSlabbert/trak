@@ -1,5 +1,9 @@
 package io.github.benslabbert.trak.entity.config;
 
+import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
+
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,11 +19,6 @@ import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
-
-import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "io.github.benslabbert.trak.entity.jpa.repo")

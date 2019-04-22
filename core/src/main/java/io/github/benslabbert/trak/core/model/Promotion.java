@@ -1,15 +1,15 @@
 package io.github.benslabbert.trak.core.model;
 
 public enum Promotion {
-    DAILY_DEAL("Daily Deal");
+  DAILY_DEAL("Daily Deal");
 
-    private String name;
+  private String name;
 
-    Promotion(String name) {
-        this.name = name;
-    }
+  Promotion(String name) {
+    this.name = name;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 }

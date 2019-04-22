@@ -1,11 +1,16 @@
 package io.github.benslabbert.trak.worker.listener;
 
+import static io.github.benslabbert.trak.worker.config.Profiles.JPA_TEST_POFILE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.price.clean.PriceCleanUpEventFactory;
 import io.github.benslabbert.trak.worker.config.JPATestConfig;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,12 +21,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-
-import static io.github.benslabbert.trak.worker.config.Profiles.JPA_TEST_POFILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @Transactional
 @RunWith(SpringRunner.class)

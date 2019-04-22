@@ -1,11 +1,10 @@
 package io.github.benslabbert.trak.entity.jpa;
 
-import lombok.*;
-
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import javax.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(schema = Schema.TRAK, name = "price")

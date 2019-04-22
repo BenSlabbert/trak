@@ -1,18 +1,17 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import static io.github.benslabbert.trak.core.cache.CacheNames.CATEGORY_CACHE;
+
 import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.repo.CategoryRepo;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static io.github.benslabbert.trak.core.cache.CacheNames.CATEGORY_CACHE;
 
 @Slf4j
 @Service

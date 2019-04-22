@@ -1,11 +1,10 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import javax.persistence.OptimisticLockException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
-
-import javax.persistence.OptimisticLockException;
 
 @Slf4j
 public abstract class RetryPersist<T, ID> {

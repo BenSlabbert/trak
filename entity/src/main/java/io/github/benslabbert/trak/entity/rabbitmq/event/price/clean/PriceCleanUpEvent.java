@@ -4,5 +4,5 @@ import io.github.benslabbert.trak.entity.rabbitmq.event.Event;
 
 public interface PriceCleanUpEvent extends Event {
 
-    long getProductId();
+  long getProductId();
 }

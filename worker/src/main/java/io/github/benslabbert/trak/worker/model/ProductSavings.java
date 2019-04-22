@@ -8,6 +8,6 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class ProductSavings {
-    private long productId;
-    private float savings;
+  private long productId;
+  private float savings;
 }

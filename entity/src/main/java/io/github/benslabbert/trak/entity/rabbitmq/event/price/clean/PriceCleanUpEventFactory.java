@@ -6,7 +6,7 @@ public class PriceCleanUpEventFactory {
 
   private PriceCleanUpEventFactory() {}
 
-  public static PriceCleanUpEvent create(long  productId) {
+  public static PriceCleanUpEvent create(long productId) {
     return new CreatePriceCleanUpEvent(UUID.randomUUID().toString(), productId);
   }
 }

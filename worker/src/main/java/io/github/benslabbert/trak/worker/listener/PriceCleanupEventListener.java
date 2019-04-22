@@ -1,11 +1,16 @@
 package io.github.benslabbert.trak.worker.listener;
 
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRICE_QUEUE;
+
 import io.github.benslabbert.trak.core.pagination.PageOverContent;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.price.clean.PriceCleanUpEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -14,12 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRICE_QUEUE;
 
 @Slf4j
 @Component
