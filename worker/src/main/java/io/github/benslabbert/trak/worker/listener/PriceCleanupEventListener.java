@@ -5,7 +5,8 @@ import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
-import io.github.benslabbert.trak.entity.rabbit.event.price.clean.PriceCleanUpEvent;
+import io.github.benslabbert.trak.entity.rabbitmq.event.price.clean.PriceCleanUpEvent;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,21 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.benslabbert.trak.entity.rabbit.Queue.PRICE_QUEUE;
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRICE_QUEUE;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 @RabbitListener(queues = PRICE_QUEUE, containerFactory = "customRabbitListenerContainerFactory")
 public class PriceCleanupEventListener extends PageOverContent<Price> {
 
   private final ProductService productService;
   private final PriceService priceService;
-
-  public PriceCleanupEventListener(ProductService productService, PriceService priceService) {
-
-    this.productService = productService;
-    this.priceService = priceService;
-  }
 
   @RabbitHandler
   public void receive(PriceCleanUpEvent event) {

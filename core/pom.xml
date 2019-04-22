@@ -5,7 +5,7 @@
 
   <groupId>io.github.benslabbert.trak</groupId>
   <artifactId>core</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>core</name>
@@ -107,7 +107,7 @@
   </dependencies>
 
   <build>
-    <finalName>entity</finalName>
+    <finalName>core</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

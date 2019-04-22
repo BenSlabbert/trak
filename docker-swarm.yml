@@ -1,0 +1,400 @@
+version: "3.7"
+
+services:
+
+  ######################
+  #  TRAK Applications #
+  ######################
+
+  engine:
+    image: benjaminslabbert/trak_engine:1.0.2
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - rds
+      - rabbit
+    labels:
+      - "description=Trak Engine, create jobs on Rabbit worker queue"
+    networks:
+      - backend
+    stop_grace_period: 1m30s
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 250M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
+
+  worker:
+    image: benjaminslabbert/trak_worker:1.0.2
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - rds
+      - rabbit
+      - engine
+    labels:
+      - "description=Trak Worker, processes events from RabbitMQ"
+    networks:
+      - backend
+    stop_grace_period: 1m30s
+    deploy:
+      replicas: 3
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 250M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
+
+  search:
+    image: benjaminslabbert/trak_search:1.0.2
+    ports:
+      - 50052:50052
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - rds
+      - rabbit
+      - es
+    labels:
+      - "description=Trak Search, searches for Elasticsearch"
+    networks:
+      - backend
+      - frontend
+    stop_grace_period: 1m30s
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 250M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
+
+  api:
+    image: benjaminslabbert/trak_api:1.0.2
+    ports:
+      - 8082:8080
+      - 50051:50051
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - rds
+      - rabbit
+    labels:
+      - "description=Trak API, API for UI service"
+    networks:
+      - backend
+      - frontend
+    stop_grace_period: 1m30s
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 250M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
+
+  ui:
+    image: benjaminslabbert/trak_ui:1.0.2
+    ports:
+      - 3000:3000
+    depends_on:
+      - search
+      - api
+    labels:
+      - "description=Trak UI, serving ReactJS"
+    networks:
+      - frontend
+    stop_grace_period: 1m30s
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 250M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
+
+  #####################
+  # External Services #
+  #####################
+
+  rabbit:
+    image: rabbitmq:3.7.14-management-alpine
+    hostname: rabbit
+    environment:
+      - RABBITMQ_DEFAULT_USER=trak
+      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_DEFAULT_VHOST=/
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbit-data:/var/lib/rabbitmq
+    networks:
+      - backend
+    stop_grace_period: 1m30s
+    labels:
+      - "description=RabbitMQ Service"
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 600M
+        reservations:
+          cpus: '0.25'
+          memory: 300M
+
+  redis:
+    image: redis:5.0.4-alpine
+    ports:
+      - 6379:6379
+    networks:
+      - backend
+    stop_grace_period: 1m30s
+    volumes:
+      - redis-data:/data
+    labels:
+      - "description=Redis Service"
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 600M
+        reservations:
+          cpus: '0.25'
+          memory: 300M
+
+  rds:
+    image: mariadb:10.3.14
+    volumes:
+      - rds-data:/var/lib/mysql
+    networks:
+      - backend
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+      - MYSQL_DATABASE=trak
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    stop_grace_period: 1m30s
+    labels:
+      - "description=Maria DB Relational DB"
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 600M
+        reservations:
+          cpus: '0.25'
+          memory: 300M
+      placement:
+        constraints: [node.role == manager]
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
+    restart: always
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    environment:
+      - "discovery.type=single-node"
+      - "transport.host=es"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    stop_grace_period: 1m30s
+    networks:
+      - backend
+    labels:
+      - "description:=Elastic Search"
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.4.1
+    restart: always
+    ports:
+      - 5601:5601
+    volumes:
+      - kibana-data:/usr/share/kibana
+    environment:
+      SERVER_NAME: kibana.local
+      ELASTICSEARCH_URL: http://es:9200
+    depends_on:
+      - es
+    stop_grace_period: 1m30s
+    networks:
+      - backend
+      - frontend
+    labels:
+      - "description=Kibana ELK UI"
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  logstash:
+    image: benjaminslabbert/trak_logstash:1.0.2
+    ports:
+      - 9600:9600
+    restart: always
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    depends_on:
+      - es
+      - kibana
+    stop_grace_period: 1m30s
+    networks:
+      - backend
+    labels:
+      - "description=Logstash Data Pipeline"
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  rabbit-data:
+  kibana-data:
+  redis-data:
+  rds-data:
+  es-data:

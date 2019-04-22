@@ -2,8 +2,10 @@ package io.github.benslabbert.trak.worker.listener;
 
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
-import io.github.benslabbert.trak.entity.rabbit.event.price.update.PriceUpdateEvent;
+import io.github.benslabbert.trak.entity.rabbitmq.event.price.update.PriceUpdateEvent;
 import io.github.benslabbert.trak.worker.response.ProductResponse;
+import io.github.benslabbert.trak.worker.util.ProductRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -11,18 +13,15 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-import static io.github.benslabbert.trak.entity.rabbit.Queue.PRODUCT_QUEUE;
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRODUCT_QUEUE;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 @RabbitListener(queues = PRODUCT_QUEUE, containerFactory = "customRabbitListenerContainerFactory")
 public class ProductEventListener extends ProductRequest {
 
   private final PriceService priceService;
-
-  public ProductEventListener(PriceService priceService) {
-    this.priceService = priceService;
-  }
 
   @RabbitHandler
   public void receive(PriceUpdateEvent priceUpdateEvent) {

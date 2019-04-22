@@ -1,0 +1,17 @@
+spring:
+  config:
+    name: trak-worker
+  liquibase:
+    change-log: classpath:liquibase.sql
+  jpa:
+    show-sql: true
+  rabbitmq:
+    username: trak
+    password: password
+    host: localhost
+    virtual-host: /
+    port: 5672
+    listener:
+      simple:
+        concurrency: 2
+        max-concurrency: 2

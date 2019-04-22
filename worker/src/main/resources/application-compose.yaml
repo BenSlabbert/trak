@@ -1,0 +1,24 @@
+spring:
+  config:
+    name: trak-worker
+  liquibase:
+    change-log: classpath:liquibase.sql
+  jpa:
+    show-sql: false
+  rabbitmq:
+    username: ${RABBIT_MQ_USERNAME:trak}
+    password: ${RABBIT_MQ_PASSWORD:password}
+    host: ${RABBIT_MQ_HOST:rabbit}
+    virtual-host: ${RABBIT_MQ_VIRTUAL_HOST:/}
+    port: ${RABBIT_MQ_PORT:5672}
+    listener:
+      simple:
+        concurrency: ${RABBIT_MQ_CONCURRENCY:2}
+        max-concurrency: ${RABBIT_MQ_MAX_CONCURRENCY:2}
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    ssl: ${REDIS_USE_SSL:false}
+
+cache:
+  duration: ${CACHE_DURATION_SECONDS:300}

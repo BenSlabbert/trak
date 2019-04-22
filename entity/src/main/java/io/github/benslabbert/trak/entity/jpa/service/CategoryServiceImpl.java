@@ -2,7 +2,9 @@ package io.github.benslabbert.trak.entity.jpa.service;
 
 import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.repo.CategoryRepo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,16 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static io.github.benslabbert.trak.core.cache.CacheNames.CATEGORY_CACHE;
+
 @Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CategoryServiceImpl extends RetryPersist<Category, Long> implements CategoryService {
 
   private final CategoryRepo repo;
-
-  public CategoryServiceImpl(CategoryRepo repo) {
-    this.repo = repo;
-  }
 
   @Override
   public List<Category> createCategories(List<String> names) {
@@ -46,6 +47,7 @@ public class CategoryServiceImpl extends RetryPersist<Category, Long> implements
   }
 
   @Override
+  @Cacheable(value = CATEGORY_CACHE, key = "#id", unless = "#result == null")
   public Optional<Category> findById(long id) {
     return repo.findById(id);
   }

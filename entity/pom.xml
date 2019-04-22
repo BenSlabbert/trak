@@ -5,7 +5,7 @@
 
   <groupId>io.github.benslabbert.trak</groupId>
   <artifactId>entity</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>entity</name>
@@ -86,6 +86,12 @@
   </distributionManagement>
 
   <dependencies>
+
+    <dependency>
+      <groupId>io.github.benslabbert.trak</groupId>
+      <artifactId>core</artifactId>
+      <version>1.0.2-SNAPSHOT</version>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>

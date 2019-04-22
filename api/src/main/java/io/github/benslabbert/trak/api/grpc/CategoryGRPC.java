@@ -53,6 +53,8 @@ public class CategoryGRPC extends CategoryServiceGrpc.CategoryServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+        responseObserver.onCompleted();
+        return;
     }
 
     Page<Product> all = productService.findAll(category.get(), PageRequest.of(0, 12));

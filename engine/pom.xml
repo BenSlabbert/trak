@@ -5,7 +5,7 @@
 
   <groupId>io.github.benslabbert.trak</groupId>
   <artifactId>engine</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>jar</packaging>
 
   <name>engine</name>
@@ -87,17 +87,21 @@
 
   <dependencies>
 
+    <!-- TRAK -->
+
     <dependency>
       <groupId>io.github.benslabbert.trak</groupId>
       <artifactId>entity</artifactId>
-      <version>1.0.1-SNAPSHOT</version>
+      <version>1.0.2-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>io.github.benslabbert.trak</groupId>
       <artifactId>core</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.2-SNAPSHOT</version>
     </dependency>
+
+    <!-- SPRING -->
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -137,6 +141,8 @@
       <artifactId>h2</artifactId>
       <scope>runtime</scope>
     </dependency>
+
+    <!-- TEST -->
 
     <dependency>
       <groupId>org.springframework.boot</groupId>

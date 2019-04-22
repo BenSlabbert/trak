@@ -5,8 +5,10 @@ import io.github.benslabbert.trak.entity.jpa.service.BrandService;
 import io.github.benslabbert.trak.entity.jpa.service.CategoryService;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
-import io.github.benslabbert.trak.entity.rabbit.event.crawler.CrawlerEvent;
+import io.github.benslabbert.trak.entity.rabbitmq.event.crawler.CrawlerEvent;
 import io.github.benslabbert.trak.worker.response.ProductResponse;
+import io.github.benslabbert.trak.worker.util.ProductRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -17,10 +19,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static io.github.benslabbert.trak.entity.rabbit.Queue.CRAWLER_QUEUE;
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.CRAWLER_QUEUE;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 @RabbitListener(queues = CRAWLER_QUEUE, containerFactory = "customRabbitListenerContainerFactory")
 public class CrawlerEventListener extends ProductRequest {
 
@@ -28,18 +31,6 @@ public class CrawlerEventListener extends ProductRequest {
   private final ProductService productService;
   private final PriceService priceService;
   private final BrandService brandService;
-
-  public CrawlerEventListener(
-      CategoryService categoryService,
-      ProductService productService,
-      PriceService priceService,
-      BrandService brandService) {
-
-    this.categoryService = categoryService;
-    this.productService = productService;
-    this.priceService = priceService;
-    this.brandService = brandService;
-  }
 
   @RabbitHandler
   public void receive(CrawlerEvent crawlerEvent) {
@@ -61,7 +52,7 @@ public class CrawlerEventListener extends ProductRequest {
 
       Optional<ProductResponse> response = getProductResponse(apiUrl);
 
-      if (response.isEmpty()) return;
+        if (response.isEmpty() || response.get().getProductBrand() == null) return;
 
       Brand brand = brandService.findByNameEquals(response.get().getProductBrand());
 

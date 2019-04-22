@@ -35,9 +35,9 @@ public class WorkerApplication {
   public ThreadPoolTaskExecutor executor() {
 
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize(10);
-    executor.setMaxPoolSize(500);
-    executor.setQueueCapacity(Integer.MAX_VALUE);
+      executor.setCorePoolSize(4);
+      executor.setMaxPoolSize(10);
+      executor.setQueueCapacity(10);
     executor.setThreadNamePrefix("TRAK-WORKER-");
     executor.initialize();
 

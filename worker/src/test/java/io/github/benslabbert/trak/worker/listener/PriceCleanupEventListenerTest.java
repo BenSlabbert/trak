@@ -4,7 +4,7 @@ import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
-import io.github.benslabbert.trak.entity.rabbit.event.price.clean.PriceCleanUpEventFactory;
+import io.github.benslabbert.trak.entity.rabbitmq.event.price.clean.PriceCleanUpEventFactory;
 import io.github.benslabbert.trak.worker.config.JPATestConfig;
 import org.junit.Before;
 import org.junit.Test;

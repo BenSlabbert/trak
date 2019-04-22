@@ -4,7 +4,7 @@ import io.github.benslabbert.trak.entity.jpa.Crawler;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.CrawlerService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
-import io.github.benslabbert.trak.entity.rabbit.event.crawler.CrawlerEvent;
+import io.github.benslabbert.trak.entity.rabbitmq.event.crawler.CrawlerEvent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

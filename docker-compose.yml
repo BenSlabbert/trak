@@ -3,12 +3,17 @@ version: '2.4'
 services:
 
   rabbit:
-    image: rabbitmq:3.7.14-alpine
+    image: rabbitmq:3.7.14-management-alpine
     hostname: rabbit
     restart: always
     mem_limit: 600m
+    environment:
+      - RABBITMQ_DEFAULT_USER=trak
+      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_DEFAULT_VHOST=/
     ports:
       - 5672:5672
+      - 15672:15672
     volumes:
       - rabbit-data:/var/lib/rabbitmq
 
@@ -37,7 +42,7 @@ services:
 
   engine:
     build: engine/
-    image: benjaminslabbert/trak_engine:1.0.1
+    image: benjaminslabbert/trak_engine:1.0.2
     restart: always
     mem_limit: 600m
     environment:
@@ -49,7 +54,7 @@ services:
 
   worker:
     build: worker/
-    image: benjaminslabbert/trak_worker:1.0.1
+    image: benjaminslabbert/trak_worker:1.0.2
     restart: always
     mem_limit: 600m
     environment:
@@ -62,7 +67,7 @@ services:
 
   search:
     build: search/
-    image: benjaminslabbert/trak_search:1.0.1
+    image: benjaminslabbert/trak_search:1.0.2
     restart: always
     mem_limit: 250m
     ports:
@@ -78,7 +83,7 @@ services:
 
   api:
     build: api/
-    image: benjaminslabbert/trak_api:1.0.1
+    image: benjaminslabbert/trak_api:1.0.2
     restart: always
     mem_limit: 250m
     ports:
@@ -138,7 +143,7 @@ services:
 
   logstash:
     build: ./logstash-conf/
-    image: benjaminslabbert/trak_logstash:1.0.0
+    image: benjaminslabbert/trak_logstash:1.0.2
     ports:
       - 9600:9600
     restart: always
@@ -146,7 +151,7 @@ services:
       - es
 
   ui:
-    image: benjaminslabbert/trak_ui:1.0.0
+    image: benjaminslabbert/trak_ui:1.0.2
     ports:
       - 3000:3000
     mem_limit: 250m

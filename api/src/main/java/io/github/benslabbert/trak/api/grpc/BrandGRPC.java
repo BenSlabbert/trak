@@ -53,6 +53,8 @@ public class BrandGRPC extends BrandServiceGrpc.BrandServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+        responseObserver.onCompleted();
+        return;
     }
 
     Page<Product> all = productService.findAll(brand.get(), PageRequest.of(0, 12));

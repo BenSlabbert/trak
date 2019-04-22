@@ -1,14 +1,13 @@
 package io.github.benslabbert.trak.api;
 
-import io.grpc.BindableService;
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
+import io.grpc.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.IOException;
@@ -20,34 +19,82 @@ import java.util.Map;
 @EnableTransactionManagement
 public class ApiApplication {
 
+    private static Server server;
+
   public static void main(String[] args) {
 
     try {
       ConfigurableApplicationContext context = SpringApplication.run(ApiApplication.class, args);
-      server(context);
+        startGRPCServer(context);
       log.info("Api initialized!");
     } catch (Exception e) {
       log.error("Failed to run application!", e);
     }
   }
 
-  private static void server(ApplicationContext context) throws IOException, InterruptedException {
+    private static void startGRPCServer(ApplicationContext context)
+            throws IOException, InterruptedException {
 
-    log.debug("Setting up gRPC server");
+        log.debug("Setting up gRPC server");
 
-    Map<String, BindableService> beansOfType = context.getBeansOfType(BindableService.class);
+        ThreadPoolTaskExecutor executor = getExecutor();
 
-    ServerBuilder<?> serverBuilder = ServerBuilder.forPort(50051);
+        Map<String, BindableService> beansOfType = context.getBeansOfType(BindableService.class);
 
-    for (Map.Entry<String, BindableService> entry : beansOfType.entrySet()) {
-      log.debug("Adding grPC service: {}", entry.getKey());
-      serverBuilder.addService(entry.getValue());
+        ServerBuilder<?> serverBuilder =
+                ServerBuilder.forPort(50051)
+                        .executor(executor)
+                        .intercept(
+                                new ServerInterceptor() {
+                                    @Override
+                                    public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
+                                            ServerCall<ReqT, RespT> call,
+                                            Metadata headers,
+                                            ServerCallHandler<ReqT, RespT> next) {
+                                        call.setCompression("gzip");
+                                        return next.startCall(call, headers);
+                                    }
+                                });
+
+        for (Map.Entry<String, BindableService> entry : beansOfType.entrySet()) {
+            log.debug("Adding gRPC service: {}", entry.getKey());
+            serverBuilder.addService(entry.getValue());
+        }
+
+        log.debug("Starting gRPC server");
+
+        server = serverBuilder.build().start();
+        server.awaitTermination();
+        addShutdownHook();
     }
 
-    log.debug("Starting gRPC server");
-    Server server = serverBuilder.build();
+    private static ThreadPoolTaskExecutor getExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-    server.start();
-    server.awaitTermination();
-  }
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(10);
+        executor.setThreadNamePrefix("-grpc-thread-");
+        executor.initialize();
+        return executor;
+    }
+
+    private static void addShutdownHook() {
+
+        Runtime.getRuntime()
+                .addShutdownHook(
+                        new Thread(
+                                () -> {
+                                    // Use stderr here since the logger may have been reset by its JVM shutdown hook.
+                                    System.err.println("*** shutting down gRPC server since JVM is shutting down");
+                                    stop();
+                                    System.err.println("*** server shut down");
+                                }));
+    }
+
+    private static void stop() {
+        if (server != null) {
+            server.shutdown();
+        }
+    }
 }

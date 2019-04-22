@@ -43,7 +43,7 @@ public class SearchGRPC extends SearchServiceGrpc.SearchServiceImplBase {
     log.debug("Searching for brand: {}", request.getSearch());
 
     responseObserver.onNext(
-        buildSearchResponse(brandService.findProductByNameLike(request.getSearch(), pageable)));
+            buildSearchResponse(brandService.findBrandByNameLike(request.getSearch(), pageable)));
 
     responseObserver.onCompleted();
   }

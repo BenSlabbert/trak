@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker-compose build --parallel --compress
+docker-compose -f docker-compose.yml build --parallel --compress

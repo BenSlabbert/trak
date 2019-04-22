@@ -3,7 +3,8 @@ package io.github.benslabbert.trak.engine.job;
 import io.github.benslabbert.trak.core.pagination.PageOverAll;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
-import io.github.benslabbert.trak.entity.rabbit.event.price.clean.PriceCleanUpEventFactory;
+import io.github.benslabbert.trak.entity.rabbitmq.event.price.clean.PriceCleanUpEventFactory;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -15,19 +16,12 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class PriceCleanUpJob extends PageOverAll<Product> implements Runnable {
 
   private final ProductService productService;
   private final RabbitTemplate rabbitTemplate;
-  private final Queue queue;
-
-  public PriceCleanUpJob(
-      ProductService productService, RabbitTemplate rabbitTemplate, Queue priceQueue) {
-
-    this.productService = productService;
-    this.rabbitTemplate = rabbitTemplate;
-    this.queue = priceQueue;
-  }
+    private final Queue priceQueue;
 
   @Async
   @Override
@@ -53,6 +47,6 @@ public class PriceCleanUpJob extends PageOverAll<Product> implements Runnable {
   @Override
   protected void processItem(Product product) {
     rabbitTemplate.convertAndSend(
-        queue.getName(), PriceCleanUpEventFactory.create(product.getId()));
+            priceQueue.getName(), PriceCleanUpEventFactory.create(product.getId()));
   }
 }

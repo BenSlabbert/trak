@@ -2,19 +2,26 @@ package io.github.benslabbert.trak.api.grpc;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.github.benslabbert.trak.api.rabbitmq.rpc.AddProductRPC;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.ProductImage;
+import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
+import io.github.benslabbert.trak.entity.jpa.service.SellerService;
+import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequestFactory;
 import io.github.benslabbert.trak.grpc.*;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -23,14 +30,131 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
 
   private final ProductService productService;
+  private final SellerService sellerService;
+  private final AddProductRPC addProductRPC;
   private final PriceService priceService;
 
-  public ProductGRPC(ProductService productService, PriceService priceService) {
-    this.productService = productService;
-    this.priceService = priceService;
+  @Override
+  public void addProduct(
+          AddProductRequest request, StreamObserver<AddProductResponse> responseObserver) {
+
+    String requestPlId = request.getPlId();
+
+    if (StringUtils.isEmpty(requestPlId)) {
+      Status status =
+              Status.newBuilder()
+                      .setCode(Code.INVALID_ARGUMENT.getNumber())
+                      .setMessage("PLID not set!")
+                      .build();
+
+      responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+      responseObserver.onCompleted();
+      return;
+    }
+
+    requestPlId = requestPlId.trim();
+
+    String apiEndpoint;
+    long plId;
+
+    if (isURL(requestPlId)) {
+      apiEndpoint = requestPlId;
+      plId = getPLID(URI.create(requestPlId));
+    } else if (isPLID(requestPlId)) {
+      plId = getPLID(requestPlId);
+      apiEndpoint = getApiUrl(plId);
+    } else {
+      Status status =
+              Status.newBuilder()
+                      .setCode(Code.UNKNOWN.getNumber())
+                      .setMessage("Cannot determine if PLID provided is a URL or number")
+                      .build();
+
+      responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+      responseObserver.onCompleted();
+      return;
+    }
+
+    Optional<Seller> seller = sellerService.findByNameEquals("Takealot");
+
+    if (seller.isEmpty()) {
+      log.warn("Failed to find Takealot seller!");
+      Status status =
+              Status.newBuilder()
+                      .setCode(Code.INTERNAL.getNumber())
+                      .setMessage("Failed to find Seller")
+                      .build();
+
+      responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+      responseObserver.onCompleted();
+      return;
+    }
+
+    Long productId =
+            addProductRPC.addProduct(
+                    AddProductRPCRequestFactory.create(URI.create(apiEndpoint), seller.get(), plId));
+
+    log.info("Got productId: {}", productId);
+    responseObserver.onNext(AddProductResponse.newBuilder().setProductId(productId).build());
+    responseObserver.onCompleted();
+  }
+
+  private long getPLID(URI uri) {
+
+    String s = uri.toString();
+    return getPLID(s.substring(s.indexOf("PLID")).trim());
+  }
+
+  private long getPLID(String requestPlId) {
+    return Long.parseLong(requestPlId.trim().replace("PLID", ""));
+  }
+
+  private String getApiUrl(long plId) {
+    return "https://api.takealot.com/rest/v-1-8-0/product-details/PLID"
+            + plId
+            + "?platform=desktop";
+  }
+
+  private boolean isPLID(String plId) {
+
+    plId = plId.toUpperCase();
+
+    if (plId.startsWith("PLID")) {
+      plId = plId.replace("PLID", "");
+      return isNumeric(plId);
+    } else {
+      return isNumeric(plId);
+    }
+  }
+
+  private boolean isNumeric(String plId) {
+
+    try {
+      long l = Long.parseLong(plId);
+      log.debug("Converted {} to number: {}", plId, l);
+      return true;
+    } catch (Exception e) {
+      log.warn("Failed to convert {} to number!", plId);
+      return false;
+    }
+  }
+
+  private boolean isURL(String url) {
+
+    try {
+      URI uri = URI.create(url);
+      log.debug("Converted {} to URI: {}", uri, uri);
+
+      return url.contains("PLID");
+
+    } catch (Exception e) {
+      log.debug("Failed to convert {} to a url", url);
+      return false;
+    }
   }
 
   @Override
@@ -56,6 +180,7 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+      responseObserver.onCompleted();
     }
   }
 

@@ -2,6 +2,7 @@ package io.github.benslabbert.trak.entity.jpa.service;
 
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.repo.PriceRepo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -14,44 +15,41 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static io.github.benslabbert.trak.core.cache.CacheNames.PRICE_CACHE;
+
 @Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PriceServiceImpl extends RetryPersist<Price, Long> implements PriceService {
-
-  private static final String CACHE_NAME = "prices";
 
   private final PriceRepo repo;
 
-  public PriceServiceImpl(PriceRepo repo) {
-    this.repo = repo;
-  }
-
   @Override
-  @CacheEvict(value = CACHE_NAME, allEntries = true)
+  @CacheEvict(value = PRICE_CACHE, allEntries = true)
   public Price save(Price price) {
     return retry(price, 1, repo);
   }
 
   @Override
   @Cacheable(
-      value = CACHE_NAME,
-      key = "'price-' + #productId + '-' + #pageable.pageSize + '-' + #pageable.pageNumber",
+          value = PRICE_CACHE,
+          key = "#productId + '-' + #pageable.pageSize + '-' + #pageable.pageNumber",
       unless = "#result == null")
   public Page<Price> findAllByProductId(long productId, Pageable pageable) {
     return repo.findAllByProductIdEquals(productId, pageable);
   }
 
   @Override
-  @Cacheable(value = CACHE_NAME, key = "'price-' + #productId", unless = "#result == null")
+  @Cacheable(value = PRICE_CACHE, key = "#productId", unless = "#result == null")
   public Optional<Price> findLatestByProductId(long productId) {
     return repo.findTopByProductIdEquals(productId);
   }
 
   @Override
   @Cacheable(
-      value = CACHE_NAME,
-      key = "'price-' + #productId + '-' + #created.time",
+          value = PRICE_CACHE,
+          key = "#productId + '-' + #created.time",
       unless = "#result == null")
   public List<Price> findAllByCreatedGreaterThan(long productId, Date created) {
     return repo.findAllByProductIdEqualsAndCreatedGreaterThanEqual(productId, created);

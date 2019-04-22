@@ -1,0 +1,12 @@
+spring:
+  config:
+    name: trak-search
+
+logging:
+  level:
+    org.springframework.data.elasticsearch.core: DEBUG
+
+elasticsearch:
+  host: localhost
+  port: 9300
+  clustername: docker-cluster

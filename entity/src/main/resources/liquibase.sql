@@ -146,3 +146,21 @@ create table trak.link_product_product_image (
   engine = InnoDB;
 
 -- rollback drop table trak.link_product_product_images
+
+-- changeset trak: 14
+
+create table trak.best_savings
+(
+  id         bigint auto_increment not null,
+  version    integer default 0     not null,
+  created    datetime              not null,
+  updated    datetime              not null,
+  product_id bigint                not null,
+  saving     float                 not null,
+  foreign key (product_id) references trak.product (id),
+  primary key (id),
+  index (id)
+)
+  engine = InnoDB;
+
+-- rollback drop table trak.best_savings

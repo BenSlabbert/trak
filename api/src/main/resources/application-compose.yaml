@@ -1,0 +1,14 @@
+spring:
+  config:
+    name: trak-api
+  liquibase:
+    change-log: classpath:liquibase.sql
+  jpa:
+    show-sql: true
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    ssl: ${REDIS_USE_SSL:false}
+
+cache:
+  duration: ${CACHE_DURATION_SECONDS:300}
