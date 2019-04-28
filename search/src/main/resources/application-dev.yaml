@@ -1,3 +1,5 @@
+server:
+  port: 8081
 spring:
   config:
     name: trak-search
@@ -10,3 +12,9 @@ elasticsearch:
   host: localhost
   port: 9300
   clustername: docker-cluster
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus

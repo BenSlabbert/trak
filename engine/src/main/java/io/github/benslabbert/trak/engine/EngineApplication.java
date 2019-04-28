@@ -60,16 +60,16 @@ public class EngineApplication {
 
   @Bean
   public Queue productQueue() {
-    return new Queue(PRODUCT_QUEUE, true, false, false);
+    return new Queue(PRODUCT_QUEUE, true, false, false, queueProperties());
   }
 
   @Bean
   public Queue priceQueue() {
-    return new Queue(PRICE_QUEUE, true, false, false);
+    return new Queue(PRICE_QUEUE, true, false, false, queueProperties());
   }
 
   @Bean
   public Queue savingsQueue() {
-    return new Queue(SAVINGS_QUEUE, true, false, false);
+    return new Queue(SAVINGS_QUEUE, true, false, false, queueProperties());
   }
 }

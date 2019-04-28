@@ -1,3 +1,5 @@
+server:
+  port: 8083
 spring:
   config:
     name: trak-engine
@@ -19,6 +21,14 @@ spring:
     host: ${REDIS_HOST:redis}
     port: ${REDIS_PORT:6379}
     ssl: ${REDIS_USE_SSL:false}
+  datasource:
+    url: jdbc:mysql://${MARIADB_HOST:rds}/trak
 
 cache:
   duration: ${CACHE_DURATION_SECONDS:300}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus

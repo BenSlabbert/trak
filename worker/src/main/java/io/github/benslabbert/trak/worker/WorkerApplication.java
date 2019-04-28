@@ -19,13 +19,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Slf4j
 @EnableAsync
-@EnableScheduling
 @SpringBootApplication
 @EnableTransactionManagement
 public class WorkerApplication {
@@ -97,16 +95,16 @@ public class WorkerApplication {
 
   @Bean
   public Queue productQueue() {
-    return new Queue(PRODUCT_QUEUE, true, false, false);
+    return new Queue(PRODUCT_QUEUE, true, false, false, queueProperties());
   }
 
   @Bean
   public Queue priceQueue() {
-    return new Queue(PRICE_QUEUE, true, false, false);
+    return new Queue(PRICE_QUEUE, true, false, false, queueProperties());
   }
 
   @Bean
   public Queue savingsQueue() {
-    return new Queue(SAVINGS_QUEUE, true, false, false);
+    return new Queue(SAVINGS_QUEUE, true, false, false, queueProperties());
   }
 }

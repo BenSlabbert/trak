@@ -1,4 +1,4 @@
-# Trak
+#Trak
 
 Tracking the prices of items on [Takealot](https://www.takealot.com/).
 
@@ -6,30 +6,24 @@ Tracking the prices of items on [Takealot](https://www.takealot.com/).
 
 This project was inspired by the site: [camelcamelcamel](https://camelcamelcamel.com/)
 
-## Running Set Up
+##Running Set Up
 
-### VM Options
+###VM Options
 
 * -Dspring.profiles.active=dev
 
-### Environment Variables
-
-#### H2
-
-* SPRING_DATASOURCE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
-
-#### MySQL
+####MySQL
 
 * SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/trak
 * SPRING_DATASOURCE_USERNAME=root
 * SPRING_DATASOURCE_PASSWORD=root
 
 
-## Artifacts
+##Artifacts
 
 * [Docker Images](https://hub.docker.com/u/benjaminslabbert)
 
-## Builds
+##Builds
 
 [Travis-CI](https://travis-ci.org/BenSlabbert/trak)
 
@@ -43,6 +37,13 @@ This project was inspired by the site: [camelcamelcamel](https://camelcamelcamel
 
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=BenSlabbert_trak&metric=sqale_rating)](https://sonarcloud.io/api/project_badges/measure?project=BenSlabbert_trak&metric=sqale_rating)
 
-## TODO
+##TODO
 
 * add spotiffy docker plugin
+
+##USEFUL
+
+###Minimal JRE
+
+* [Why large base image OpenJDK 11](https://stackoverflow.com/questions/53375613/why-is-the-java-11-base-docker-image-so-large-openjdk11-jre-slim)
+* [Minimal image with azul/zulu-openjdk-alpine:11](https://stackoverflow.com/questions/53669151/java-11-application-as-lightweight-docker-image/53669152#53669152)

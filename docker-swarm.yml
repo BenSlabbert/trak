@@ -7,7 +7,7 @@ services:
   ######################
 
   engine:
-    image: benjaminslabbert/trak_engine:1.0.2
+    image: benjaminslabbert/trak_engine:1.0.3-2019-04-28
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -15,6 +15,7 @@ services:
     depends_on:
       - rds
       - rabbit
+      - redis
     labels:
       - "description=Trak Engine, create jobs on Rabbit worker queue"
     networks:
@@ -27,13 +28,13 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: on-failure
+        condition: always
         delay: 5s
         max_attempts: 3
         window: 120s
 
   worker:
-    image: benjaminslabbert/trak_worker:1.0.2
+    image: benjaminslabbert/trak_worker:1.0.3-2019-04-28
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -41,7 +42,7 @@ services:
     depends_on:
       - rds
       - rabbit
-      - engine
+      - redis
     labels:
       - "description=Trak Worker, processes events from RabbitMQ"
     networks:
@@ -54,22 +55,22 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: on-failure
+        condition: always
         delay: 5s
         max_attempts: 3
         window: 120s
 
   search:
-    image: benjaminslabbert/trak_search:1.0.2
+    image: benjaminslabbert/trak_search:1.0.3-2019-04-28
     ports:
       - 50052:50052
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+      - "JAVA_OPTS=-Xms256m -Xmx256m"
     depends_on:
-      - rds
-      - rabbit
       - es
+      - redis
     labels:
       - "description=Trak Search, searches for Elasticsearch"
     networks:
@@ -83,29 +84,21 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: on-failure
+        condition: always
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 250M
-        reservations:
-          cpus: '0.25'
-          memory: 100M
 
   api:
-    image: benjaminslabbert/trak_api:1.0.2
-    ports:
-      - 8082:8080
-      - 50051:50051
+    image: benjaminslabbert/trak_api:1.0.3-2019-04-28
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
+      - "JAVA_OPTS=-Xms256m -Xmx256m"
     depends_on:
       - rds
       - rabbit
+      - redis
     labels:
       - "description=Trak API, API for UI service"
     networks:
@@ -119,17 +112,10 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: on-failure
+        condition: always
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 250M
-        reservations:
-          cpus: '0.25'
-          memory: 100M
 
   ui:
     image: benjaminslabbert/trak_ui:1.0.2
@@ -150,17 +136,10 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: on-failure
+        condition: always
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 250M
-        reservations:
-          cpus: '0.25'
-          memory: 100M
 
   #####################
   # External Services #
@@ -174,7 +153,6 @@ services:
       - RABBITMQ_DEFAULT_PASS=password
       - RABBITMQ_DEFAULT_VHOST=/
     ports:
-      - 5672:5672
       - 15672:15672
     volumes:
       - rabbit-data:/var/lib/rabbitmq
@@ -194,18 +172,9 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 600M
-        reservations:
-          cpus: '0.25'
-          memory: 300M
 
   redis:
     image: redis:5.0.4-alpine
-    ports:
-      - 6379:6379
     networks:
       - backend
     stop_grace_period: 1m30s
@@ -224,13 +193,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 600M
-        reservations:
-          cpus: '0.25'
-          memory: 300M
 
   rds:
     image: mariadb:10.3.14
@@ -238,8 +200,6 @@ services:
       - rds-data:/var/lib/mysql
     networks:
       - backend
-    ports:
-      - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=my-secret-pw
       - MYSQL_DATABASE=trak
@@ -259,34 +219,30 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 600M
-        reservations:
-          cpus: '0.25'
-          memory: 300M
       placement:
         constraints: [node.role == manager]
 
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-    ports:
-      - 9200:9200
-      - 9300:9300
     volumes:
       - es-data:/usr/share/elasticsearch/data
     environment:
-      - "discovery.type=single-node"
-      - "transport.host=es"
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.minimum_master_nodes=1"
+      - "discovery.zen.ping.unicast.hosts=es"
+      - "node.master=true"
+      - "node.data=true"
+      - "node.ingest=true"
     stop_grace_period: 1m30s
     networks:
       - backend
     labels:
-      - "description:=Elastic Search"
+      - "description=Elastic Search"
     deploy:
       replicas: 1
+      endpoint_mode: vip
       mode: replicated
       update_config:
         parallelism: 2
@@ -296,13 +252,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 512M
 
   kibana:
     image: docker.elastic.co/kibana/kibana:6.4.1
@@ -332,20 +281,13 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 512M
 
   logstash:
     image: benjaminslabbert/trak_logstash:1.0.2
-    ports:
-      - 9600:9600
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "JAVA_OPTS=-Xms512m -Xmx512m"
+      - "_JAVA_OPTS=-Xms512m -Xmx512m"
     depends_on:
       - es
       - kibana
@@ -365,19 +307,108 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      resources:
-        limits:
-          cpus: '0.80'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 512M
+
+  ##############
+  # Monitoring #
+  ##############
+
+  prometheus:
+    image: benjaminslabbert/trak_prometheus:1.0.3-2019-04-28
+    stop_grace_period: 1m30s
+    volumes:
+      - prometheus-data:/prometheus
+    labels:
+      - "description=Prometheus to collect metrics"
+    networks:
+      - frontend
+      - backend
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  grafana:
+    image:  grafana/grafana
+    ports:
+      - 4000:3000
+    stop_grace_period: 1m30s
+    environment:
+      - "GF_SECURITY_ADMIN_PASSWORD=password"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    labels:
+      - "description=Grafana to display metrics"
+    networks:
+      - frontend
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  agent:
+    image: portainer/agent
+    environment:
+      # REQUIRED: Should be equal to the service name prefixed by "tasks." when
+      # deployed inside an overlay network
+      AGENT_CLUSTER_ADDR: tasks.agent
+      AGENT_PORT: 9001
+      LOG_LEVEL: debug
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    networks:
+      - agent_network
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.platform.os == linux]
+
+  portainer:
+    image: portainer/portainer
+    ports:
+      - 9000:9000
+    #    command: -H tcp://tasks.agent:9001 --tlsskipverify
+    #    volumes:
+    #      - portainer_data:/data
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - "admin-password=admin123"
+    networks:
+      - agent_network
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
 
 networks:
   frontend:
+    driver: overlay
   backend:
+    driver: overlay
+  agent_network:
+    driver: overlay
+    attachable: true
 
 volumes:
+  portainer_data:
+  prometheus-data:
+  grafana-data:
   rabbit-data:
   kibana-data:
   redis-data:

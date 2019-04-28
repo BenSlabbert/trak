@@ -1,3 +1,5 @@
+server:
+  port: 8082
 spring:
   config:
     name: trak-worker
@@ -15,3 +17,9 @@ spring:
       simple:
         concurrency: 2
         max-concurrency: 2
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus
