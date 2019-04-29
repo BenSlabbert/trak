@@ -16,6 +16,7 @@ ENV JAVA_OPTS="-XX:MaxRAM=300M \
                -XX:NativeMemoryTracking=summary \
                -XX:+UnlockDiagnosticVMOptions \
                -XX:+PrintNMTStatistics \
+               -XX:+HeapDumpOnOutOfMemoryError \
                -noverify"
 
 COPY lib lib
