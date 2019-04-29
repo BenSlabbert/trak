@@ -23,6 +23,8 @@ spring:
     ssl: ${REDIS_USE_SSL:false}
   datasource:
     url: jdbc:mysql://${MARIADB_HOST:rds}/trak
+    data-username: ${MARIADB_USERNAME:user}
+    data-password: ${MARIADB_PASSWORD:password}
 
 cache:
   duration: ${CACHE_DURATION_SECONDS:300}

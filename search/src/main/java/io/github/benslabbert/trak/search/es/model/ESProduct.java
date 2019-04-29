@@ -1,7 +1,6 @@
 package io.github.benslabbert.trak.search.es.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +11,11 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.Score;
 
+import java.io.Serializable;
+
 @Data
 @Builder
-@Document(indexName = "product_index", type = "doc")
+@Document(indexName = "product_index", type = "product")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ESProduct implements ESSearchResult, Serializable {

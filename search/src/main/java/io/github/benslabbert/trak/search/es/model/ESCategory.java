@@ -11,7 +11,7 @@ import org.springframework.data.elasticsearch.annotations.Score;
 
 @Data
 @Builder
-@Document(indexName = "category_index", type = "doc")
+@Document(indexName = "category_index", type = "category")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ESCategory implements ESSearchResult, Serializable {

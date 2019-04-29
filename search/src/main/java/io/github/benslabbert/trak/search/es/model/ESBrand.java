@@ -11,7 +11,7 @@ import org.springframework.data.elasticsearch.annotations.Score;
 
 @Data
 @Builder
-@Document(indexName = "brand_index", type = "doc")
+@Document(indexName = "brand_index", type = "brand")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ESBrand implements ESSearchResult, Serializable {

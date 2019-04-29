@@ -7,7 +7,7 @@ services:
   ######################
 
   engine:
-    image: benjaminslabbert/trak_engine:1.0.3-2019-04-28
+    image: benjaminslabbert/trak_engine:1.0.3-2019-04-29
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -28,13 +28,13 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: always
+        condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
 
   worker:
-    image: benjaminslabbert/trak_worker:1.0.3-2019-04-28
+    image: benjaminslabbert/trak_worker:1.0.3-2019-04-29
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -55,13 +55,13 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: always
+        condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
 
   search:
-    image: benjaminslabbert/trak_search:1.0.3-2019-04-28
+    image: benjaminslabbert/trak_search:1.0.3-2019-04-29
     ports:
       - 50052:50052
     environment:
@@ -84,13 +84,13 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: always
+        condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
 
   api:
-    image: benjaminslabbert/trak_api:1.0.3-2019-04-28
+    image: benjaminslabbert/trak_api:1.0.3-2019-04-29
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -112,7 +112,7 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: always
+        condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
@@ -136,7 +136,7 @@ services:
         parallelism: 2
         delay: 10s
       restart_policy:
-        condition: always
+        condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
@@ -228,8 +228,6 @@ services:
       - es-data:/usr/share/elasticsearch/data
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "JAVA_OPTS=-Xms512m -Xmx512m"
       - "discovery.zen.minimum_master_nodes=1"
       - "discovery.zen.ping.unicast.hosts=es"
       - "node.master=true"
@@ -285,9 +283,7 @@ services:
   logstash:
     image: benjaminslabbert/trak_logstash:1.0.2
     environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "JAVA_OPTS=-Xms512m -Xmx512m"
-      - "_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "LS_JAVA_OPTS=-Xms512m -Xmx512m"
     depends_on:
       - es
       - kibana
@@ -374,6 +370,14 @@ services:
       - agent_network
     deploy:
       mode: global
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
       placement:
         constraints: [node.platform.os == linux]
 
@@ -381,18 +385,26 @@ services:
     image: portainer/portainer
     ports:
       - 9000:9000
-    #    command: -H tcp://tasks.agent:9001 --tlsskipverify
-    #    volumes:
-    #      - portainer_data:/data
+    command: -H tcp://tasks.agent:9001 --tlsskipverify
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    #    volumes:
+    #      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - "admin-password=admin123"
     networks:
       - agent_network
     deploy:
-      mode: replicated
       replicas: 1
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
       placement:
         constraints: [node.role == manager]
 
