@@ -14,18 +14,19 @@ import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequestFactor
 import io.github.benslabbert.trak.grpc.*;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -93,12 +94,25 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
       return;
     }
 
-    Long productId =
+    Optional<Long> productId =
         addProductRPC.addProduct(
             AddProductRPCRequestFactory.create(URI.create(apiEndpoint), seller.get(), plId));
 
+    if (productId.isEmpty()) {
+      log.warn("Failed to add product for plId: {}", plId);
+      Status status =
+              Status.newBuilder()
+                      .setCode(Code.INTERNAL.getNumber())
+                      .setMessage("Failed to find Seller")
+                      .build();
+
+      responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+      responseObserver.onCompleted();
+      return;
+    }
+
     log.info("Got productId: {}", productId);
-    responseObserver.onNext(AddProductResponse.newBuilder().setProductId(productId).build());
+    responseObserver.onNext(AddProductResponse.newBuilder().setProductId(productId.get()).build());
     responseObserver.onCompleted();
   }
 

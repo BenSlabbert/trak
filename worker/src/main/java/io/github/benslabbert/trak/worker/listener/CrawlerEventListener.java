@@ -1,7 +1,5 @@
 package io.github.benslabbert.trak.worker.listener;
 
-import static io.github.benslabbert.trak.core.rabbitmq.Queue.CRAWLER_QUEUE;
-
 import io.github.benslabbert.trak.entity.jpa.*;
 import io.github.benslabbert.trak.entity.jpa.service.BrandService;
 import io.github.benslabbert.trak.entity.jpa.service.CategoryService;
@@ -10,15 +8,18 @@ import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.crawler.CrawlerEvent;
 import io.github.benslabbert.trak.worker.response.ProductResponse;
 import io.github.benslabbert.trak.worker.util.ProductRequest;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.CRAWLER_QUEUE;
 
 @Slf4j
 @Component
@@ -87,18 +88,22 @@ public class CrawlerEventListener extends ProductRequest {
       Brand brand,
       List<Category> categories) {
 
-    return productService.save(
-        Product.builder()
-            .name(response.getProductName())
-            .url(response.getProductUrl().trim())
-            .apiEndpoint(apiUrl)
-            .seller(seller)
-            .brand(brand)
-            .categories(categories)
-            .plId(plId)
-            .sku(response.getSKU())
-            .images(getImages(response))
-            .build());
+    Optional<Product> p = productService.findByPlID(plId);
+
+    return p.orElseGet(
+        () ->
+            productService.save(
+                Product.builder()
+                    .name(response.getProductName())
+                    .url(response.getProductUrl().trim())
+                    .apiEndpoint(apiUrl)
+                    .seller(seller)
+                    .brand(brand)
+                    .categories(categories)
+                    .plId(plId)
+                    .sku(response.getSKU())
+                    .images(getImages(response))
+                    .build()));
   }
 
   private List<ProductImage> getImages(ProductResponse response) {

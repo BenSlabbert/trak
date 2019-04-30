@@ -1,7 +1,5 @@
 package io.github.benslabbert.trak.api.rabbitmq.rpc;
 
-import static io.github.benslabbert.trak.core.rabbitmq.RPC.ADD_PRODUCT_RPC_ROUTING_KEY;
-
 import io.github.benslabbert.trak.core.annotation.RabbitMQRPC;
 import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequest;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+import static io.github.benslabbert.trak.core.rabbitmq.RPC.ADD_PRODUCT_RPC_ROUTING_KEY;
 
 @Slf4j
 @Component
@@ -25,7 +27,7 @@ public class AddProductRPC {
    * @return the productId from the new or existing product
    */
   @RabbitMQRPC(message = "Add product RPC")
-  public Long addProduct(AddProductRPCRequest addProductRPCRequest) {
+  public Optional<Long> addProduct(AddProductRPCRequest addProductRPCRequest) {
 
     Long productId =
         (Long)
@@ -36,6 +38,6 @@ public class AddProductRPC {
 
     log.info("Product? {}", productId);
 
-    return productId;
+    return Optional.ofNullable(productId);
   }
 }

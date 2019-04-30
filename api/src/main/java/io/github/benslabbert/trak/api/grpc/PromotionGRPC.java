@@ -3,25 +3,28 @@ package io.github.benslabbert.trak.api.grpc;
 import com.google.common.annotations.Beta;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.github.benslabbert.trak.api.rabbitmq.rpc.AddProductRPC;
 import io.github.benslabbert.trak.api.service.TakealotAPIService;
 import io.github.benslabbert.trak.core.model.Promotion;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.ProductImage;
+import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
-import io.github.benslabbert.trak.grpc.ProductMessage;
-import io.github.benslabbert.trak.grpc.PromotionRequest;
-import io.github.benslabbert.trak.grpc.PromotionResponse;
-import io.github.benslabbert.trak.grpc.PromotionServiceGrpc;
+import io.github.benslabbert.trak.entity.jpa.service.SellerService;
+import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequestFactory;
+import io.github.benslabbert.trak.grpc.*;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -30,6 +33,8 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
 
   private final TakealotAPIService takealotAPIService;
   private final ProductService productService;
+  private final AddProductRPC addProductRPC;
+  private final SellerService sellerService;
   private final PriceService priceService;
 
   @Override
@@ -78,8 +83,52 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
 
   private void getDailyDeals(StreamObserver<PromotionResponse> responseObserver) {
 
-    List<Long> ids = takealotAPIService.getPLIDsOnPromotion(Promotion.DAILY_DEAL);
-    List<Product> products = productService.findAllByPLIDsIn(ids);
+    List<Long> plIds = takealotAPIService.getPLIDsOnPromotion(Promotion.DAILY_DEAL);
+    List<Product> products = productService.findAllByPLIDsIn(plIds);
+
+    // todo duplicate
+    if (products.size() != plIds.size()) {
+      log.warn("Not all Daily Deal items are in db, add one by one ...");
+      Optional<Seller> seller = sellerService.findByNameEquals("Takealot");
+
+      if (seller.isEmpty()) {
+        log.warn("Failed to find Takealot seller!");
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.INTERNAL.getNumber())
+                .setMessage("Failed to find Seller")
+                .build();
+
+        responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+        responseObserver.onCompleted();
+        return;
+      }
+
+      List<Long> productPLIds =
+          products.stream().map(Product::getPlId).collect(Collectors.toList());
+      plIds.removeAll(productPLIds);
+
+      for (Long plId : plIds) {
+        Optional<Long> productId =
+            addProductRPC.addProduct(
+                AddProductRPCRequestFactory.create(
+                    URI.create(getApiUrl(plId)), seller.get(), plId));
+
+        if (productId.isEmpty()) {
+          log.warn("Failed to add product for plId: {}", plId);
+          continue;
+        }
+
+        Optional<Product> p = productService.findOne(productId.get());
+
+        if (p.isPresent()) {
+          products.add(p.get());
+        } else {
+          log.warn("NO product for id: {}", productId);
+        }
+      }
+    }
+
     List<ProductMessage> items = getLatestResponseItems(products);
 
     PromotionResponse latestResponse = PromotionResponse.newBuilder().addAllProducts(items).build();
@@ -87,11 +136,26 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
     responseObserver.onNext(latestResponse);
   }
 
+  private String getApiUrl(long plId) {
+    return "https://api.takealot.com/rest/v-1-8-0/product-details/PLID"
+        + plId
+        + "?platform=desktop";
+  }
+
   private List<ProductMessage> getLatestResponseItems(List<Product> products) {
     return products.stream()
         .map(
             f ->
                 ProductMessage.newBuilder()
+                    .addAllCategories(
+                        f.getCategories().stream()
+                            .map(
+                                c ->
+                                    CategoryMessage.newBuilder()
+                                        .setId(c.getId())
+                                        .setName(c.getName())
+                                        .build())
+                            .collect(Collectors.toList()))
                     .setId(f.getId())
                     .setName(f.getName())
                     .setPrice(getPrice(f))

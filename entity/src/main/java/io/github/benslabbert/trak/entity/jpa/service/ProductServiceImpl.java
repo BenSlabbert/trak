@@ -1,14 +1,10 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
-import static io.github.benslabbert.trak.core.cache.CacheNames.PRODUCT_CACHE;
-
 import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.repo.ProductRepo;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -17,6 +13,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+import static io.github.benslabbert.trak.core.cache.CacheNames.PRODUCT_CACHE;
 
 @Slf4j
 @Service
