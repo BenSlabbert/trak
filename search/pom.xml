@@ -45,7 +45,7 @@
     <dependency>
       <groupId>com.github.BenSlabbert</groupId>
       <artifactId>trak-gRPC</artifactId>
-      <version>feature~add-product-SNAPSHOT</version>
+      <version>master-SNAPSHOT</version>
     </dependency>
 
     <!-- SPRING -->
