@@ -173,28 +173,25 @@
       </plugin>
       <plugin>
         <groupId>com.spotify</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <version>1.2.0</version>
+        <artifactId>dockerfile-maven-plugin</artifactId>
+        <version>1.4.10</version>
         <executions>
           <execution>
-            <id>build-image</id>
-            <phase>package</phase>
+            <id>default</id>
             <goals>
               <goal>build</goal>
+              <goal>push</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
-          <imageName>benjaminslabbert/trak_${project.build.finalName}:${docker.tag}</imageName>
-          <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-          <resources>
-            <resource>
-              <targetPath>/</targetPath>
-              <directory>${project.build.directory}</directory>
-              <include>${project.build.finalName}.jar</include>
-              <include>/lib/*</include>
-            </resource>
-          </resources>
+          <username>${env.DOCKER_HUB_USERNAME}</username>
+          <password>${env.DOCKER_HUB_PASSWORD}</password>
+          <repository>benjaminslabbert/trak_${project.build.finalName}</repository>
+          <tag>${docker.tag}</tag>
+          <buildArgs>
+            <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+          </buildArgs>
         </configuration>
       </plugin>
       <plugin>

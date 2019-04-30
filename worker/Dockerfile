@@ -19,10 +19,11 @@ ENV JAVA_OPTS="-XX:MaxRAM=300M \
                -XX:+HeapDumpOnOutOfMemoryError \
                -noverify"
 
-COPY lib lib
-COPY search.jar app.jar
+COPY target/lib lib
+ARG JAR_FILE
+COPY target/$JAR_FILE app.jar
 
 # Expose for actuator/prometheus
-EXPOSE 8081
+EXPOSE 8082
 
 ENTRYPOINT exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=compose -jar /app.jar
