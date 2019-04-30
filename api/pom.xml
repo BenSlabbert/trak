@@ -31,6 +31,13 @@
     <main.class>io.github.benslabbert.trak.api.ApiApplication</main.class>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+
   <dependencies>
 
     <!-- TRAK -->
@@ -42,9 +49,9 @@
     </dependency>
 
     <dependency>
-      <groupId>io.github.benslabbert.trak</groupId>
-      <artifactId>grpc</artifactId>
-      <version>1.0.2-SNAPSHOT</version>
+      <groupId>com.github.BenSlabbert</groupId>
+      <artifactId>trak-gRPC</artifactId>
+      <version>feature~add-product-SNAPSHOT</version>
     </dependency>
 
     <dependency>
