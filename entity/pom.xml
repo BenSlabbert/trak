@@ -80,22 +80,6 @@
             <removeUnusedImports/>
           </java>
         </configuration>
-        <executions>
-          <execution>
-            <id>apply-code-format</id>
-            <phase>package</phase>
-            <goals>
-              <goal>apply</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>check-code-format</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
