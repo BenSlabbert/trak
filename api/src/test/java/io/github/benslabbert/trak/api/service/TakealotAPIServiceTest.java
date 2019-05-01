@@ -1,8 +1,9 @@
 package io.github.benslabbert.trak.api.service;
 
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.Test;
 
 public class TakealotAPIServiceTest {
 
