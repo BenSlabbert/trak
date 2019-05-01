@@ -10,9 +10,9 @@ script:
   - mvn dockerfile:push -f engine/pom.xml
   - mvn dockerfile:push -f worker/pom.xml
   - mvn dockerfile:push -f search/pom.xml
-  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f api/pom.xml
-  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f core/pom.xml
-  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f engine/pom.xml
-  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f entity/pom.xml
-  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f search/pom.xml
-  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f worker/pom.xml
+  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_api -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f api/pom.xml
+  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_core -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f core/pom.xml
+  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_engine -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f engine/pom.xml
+  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_entity -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f entity/pom.xml
+  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_search -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f search/pom.xml
+  - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_worker -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f worker/pom.xml
