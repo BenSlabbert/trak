@@ -1,12 +1,9 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
-import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import io.github.benslabbert.trak.entity.config.JPATestConfig;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.repo.PriceRepo;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +14,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.List;
+
+import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -30,14 +34,52 @@ public class PriceServiceImplTest {
 
   @Before
   public void setUp() {
-
     service = new PriceServiceImpl(repo);
-
     repo.saveAndFlush(Price.builder().productId(1L).build());
   }
 
+  @After
+  public void after() {
+    repo.deleteAll();
+  }
+
   @Test
-  public void testSave() {
+  public void deleteTest_exists() {
+
+    service.delete(repo.findAll().get(0).getId());
+    List<Price> all = repo.findAll();
+    assertNotNull(all);
+    assertEquals(0, all.size());
+  }
+
+  @Test
+  public void deleteTest_doesNotExists() {
+
+    service.delete(repo.findAll().get(0).getId() + 1);
+    List<Price> all = repo.findAll();
+    assertNotNull(all);
+    assertEquals(1, all.size());
+  }
+
+  @Test
+  public void findAllByCreatedGreaterThanTest_found() {
+
+    List<Price> all = service.findAllByCreatedGreaterThan(1L, new Date(0L));
+    assertNotNull(all);
+    assertEquals(1, all.size());
+    assertEquals(1L, all.get(0).getProductId());
+  }
+
+  @Test
+  public void findAllByCreatedGreaterThanTest_notFound() {
+
+    List<Price> all = service.findAllByCreatedGreaterThan(1L, new Date());
+    assertNotNull(all);
+    assertEquals(0, all.size());
+  }
+
+  @Test
+  public void testSaveTest() {
 
     Price price = service.save(Price.builder().productId(1L).build());
 
