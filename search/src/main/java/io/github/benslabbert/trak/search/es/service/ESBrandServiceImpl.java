@@ -18,6 +18,7 @@ public class ESBrandServiceImpl implements ESBrandService {
   @Override
   public Page<ESBrand> findBrandByNameLike(String name, Pageable pageable) {
 
+    // todo fix, must search for all terms on ES
     if (name.contains(" ")) {
       name = name.split(" ")[0];
     }
