@@ -101,10 +101,10 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
     if (productId.isEmpty()) {
       log.warn("Failed to add product for plId: {}", plId);
       Status status =
-              Status.newBuilder()
-                      .setCode(Code.INTERNAL.getNumber())
-                      .setMessage("Failed to find Seller")
-                      .build();
+          Status.newBuilder()
+              .setCode(Code.INTERNAL.getNumber())
+              .setMessage("Failed to find Seller")
+              .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
       responseObserver.onCompleted();
@@ -157,6 +157,8 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   }
 
   private boolean isURL(String url) {
+
+    if (!url.contains("https")) return false;
 
     try {
       URI uri = URI.create(url);
