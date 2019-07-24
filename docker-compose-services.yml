@@ -87,7 +87,7 @@ services:
 
   logstash:
     build: ./logstash-conf/
-    image: benjaminslabbert/trak_logstash:1.0.0
+    image: benjaminslabbert/trak_logstash:1.0.2
     ports:
       - 9600:9600
     restart: always
@@ -97,7 +97,7 @@ services:
       - es
 
   ui:
-    image: benjaminslabbert/trak_ui:1.0.0
+    image: benjaminslabbert/trak_ui:1.0.2
     ports:
       - 3000:3000
     mem_limit: 250m

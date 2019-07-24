@@ -71,7 +71,7 @@ services:
     restart: always
     mem_limit: 250m
     ports:
-      - 8081:8080
+      - 8081:8081
       - 50052:50052
     environment:
       - SPRING_DATASOURCE_USERNAME=user
@@ -87,7 +87,7 @@ services:
     restart: always
     mem_limit: 250m
     ports:
-      - 8082:8080
+      - 8082:8082
       - 50051:50051
     environment:
       - SPRING_DATASOURCE_USERNAME=user
