@@ -7,9 +7,9 @@ import lombok.Data;
 @Data
 public class TakealotPromotionsResponse implements Serializable {
 
-  @JsonProperty("display_name")
+  @JsonProperty("short_display_name")
   private String displayName;
 
-  @JsonProperty("promotion_id")
+  @JsonProperty("id")
   private Long promotionId;
 }
