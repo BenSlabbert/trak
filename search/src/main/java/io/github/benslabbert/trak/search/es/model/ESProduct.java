@@ -15,7 +15,7 @@ import java.io.Serializable;
 
 @Data
 @Builder
-@Document(indexName = "product_index", type = "product")
+@Document(indexName = "product_index", type = "doc")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ESProduct implements ESSearchResult, Serializable {

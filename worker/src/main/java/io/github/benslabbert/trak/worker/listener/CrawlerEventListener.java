@@ -42,17 +42,26 @@ public class CrawlerEventListener extends ProductRequest {
 
     log.debug("{}: Looking for product with PLID: {}", productId, productId);
 
-    findNewProduct(seller, productId);
+    findNewProduct(crawlerEvent.getRequestId(), seller, productId);
   }
 
-  private void findNewProduct(Seller seller, long plId) {
+  private void findNewProduct(String reqId, Seller seller, long plId) {
 
     try {
       String apiUrl = getApiUrl(plId);
 
       Optional<ProductResponse> response = getProductResponse(apiUrl);
 
-      if (response.isEmpty() || response.get().getProductBrand() == null) return;
+      if (response.isEmpty()) {
+        log.info("{}: Failed to get product response", reqId);
+        return;
+      }
+
+      // todo looks like these are books ...
+      if (response.get().getProductBrand() == null){
+        log.info("{}: No product brand available", reqId);
+        return;
+      }
 
       Brand brand = brandService.findByNameEquals(response.get().getProductBrand());
 
