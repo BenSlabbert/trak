@@ -1,10 +1,5 @@
 package io.github.benslabbert.trak.worker;
 
-import static io.github.benslabbert.trak.core.rabbitmq.Header.X_MESSAGE_TTL;
-import static io.github.benslabbert.trak.core.rabbitmq.Queue.*;
-import static io.github.benslabbert.trak.core.rabbitmq.RPC.*;
-
-import java.util.HashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -21,6 +16,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import java.util.HashMap;
+
+import static io.github.benslabbert.trak.core.rabbitmq.Header.X_MESSAGE_TTL;
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.*;
+import static io.github.benslabbert.trak.core.rabbitmq.RPC.*;
 
 @Slf4j
 @EnableAsync
@@ -46,6 +47,8 @@ public class WorkerApplication {
     executor.setMaxPoolSize(10);
     executor.setQueueCapacity(10);
     executor.setThreadNamePrefix("TRAK-WORKER-");
+    // todo investigate using this to create custom thread classes
+    // executor.setThreadFactory();
     executor.initialize();
 
     return executor;
@@ -101,6 +104,11 @@ public class WorkerApplication {
   @Bean
   public Queue priceQueue() {
     return new Queue(PRICE_QUEUE, true, false, false, queueProperties());
+  }
+
+  @Bean
+  public Queue promotionQueue() {
+    return new Queue(PROMOTIONS_QUEUE, true, false, false, queueProperties());
   }
 
   @Bean

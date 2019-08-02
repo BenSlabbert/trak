@@ -1,12 +1,9 @@
-package io.github.benslabbert.trak.api.service;
+package io.github.benslabbert.trak.worker.service;
 
-import io.github.benslabbert.trak.api.model.TakealotDailyDeal;
-import io.github.benslabbert.trak.api.model.TakealotDailyDealProduct;
-import io.github.benslabbert.trak.api.model.TakealotPromotion;
-import io.github.benslabbert.trak.api.model.TakealotPromotionsResponse;
 import io.github.benslabbert.trak.core.model.Promotion;
+import io.github.benslabbert.trak.worker.model.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,27 +13,26 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.github.benslabbert.trak.core.cache.CacheNames.TAKEALOT_PROMOTION_CACHE;
-
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TakealotAPIService {
 
   private RestTemplate restTemplate = new RestTemplate();
 
-  private Optional<Long> getPromotionId(Promotion promotion) {
+  private Optional<Long> getPromotionId(String promotionName) {
 
-    Optional<TakealotPromotion> body = getTakealotPromotion();
+    Optional<TakealotPromotion> p = getTakealotPromotion();
 
-    if (body.isEmpty()) return Optional.empty();
+    if (p.isEmpty()) return Optional.empty();
 
-    return body.get().getResponseList().stream()
-        .filter(f -> f.getDisplayName().equals(promotion.getName()))
+    return p.get().getResponseList().stream()
+        .filter(f -> f.getDisplayName().equals(promotionName))
         .map(TakealotPromotionsResponse::getPromotionId)
         .findFirst();
   }
 
-  private Optional<TakealotPromotion> getTakealotPromotion() {
+  public Optional<TakealotPromotion> getTakealotPromotion() {
 
     ResponseEntity<TakealotPromotion> resp =
         restTemplate.exchange(
@@ -97,19 +93,35 @@ public class TakealotAPIService {
     return ids;
   }
 
-  @Cacheable(
-      value = TAKEALOT_PROMOTION_CACHE,
-      key = "#promotion.name",
-      unless = "#result == null || #result.empty")
-  public List<Long> getPLIDsOnPromotion(Promotion promotion) {
+  public PromotionIds getPLIDsOnPromotion(Promotion promotion) {
 
-    Optional<Long> promotionId = getPromotionId(promotion);
+    Optional<Long> promotionId = getPromotionId(promotion.getName());
 
     if (promotionId.isEmpty()) {
       log.warn("No Daily Deals available");
-      return Collections.emptyList();
+      return PromotionIds.builder().plIDs(Collections.emptyList()).build();
     }
 
-    return getPLIDsOnPromotion(promotionId.get());
+    return PromotionIds.builder()
+        .name(promotion.getName())
+        .promotionId(promotionId.get())
+        .plIDs(getPLIDsOnPromotion(promotionId.get()))
+        .build();
+  }
+
+  public PromotionIds getPLIDsOnPromotion(String promotionName) {
+
+    Optional<Long> promotionId = getPromotionId(promotionName);
+
+    if (promotionId.isEmpty()) {
+      log.warn("No Daily Deals available");
+      return PromotionIds.builder().plIDs(Collections.emptyList()).build();
+    }
+
+    return PromotionIds.builder()
+        .name(promotionName)
+        .promotionId(promotionId.get())
+        .plIDs(getPLIDsOnPromotion(promotionId.get()))
+        .build();
   }
 }

@@ -3,25 +3,23 @@ package io.github.benslabbert.trak.api.grpc;
 import com.google.common.annotations.Beta;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.github.benslabbert.trak.api.rabbitmq.rpc.AddProductRPC;
-import io.github.benslabbert.trak.api.service.TakealotAPIService;
 import io.github.benslabbert.trak.core.model.Promotion;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.ProductImage;
-import io.github.benslabbert.trak.entity.jpa.Seller;
+import io.github.benslabbert.trak.entity.jpa.PromotionEntity;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
-import io.github.benslabbert.trak.entity.jpa.service.SellerService;
-import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequestFactory;
+import io.github.benslabbert.trak.entity.jpa.service.PromotionEntityService;
 import io.github.benslabbert.trak.grpc.*;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,30 +29,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase {
 
-  private final TakealotAPIService takealotAPIService;
+  private final PromotionEntityService promotionEntityService;
   private final ProductService productService;
-  private final AddProductRPC addProductRPC;
-  private final SellerService sellerService;
   private final PriceService priceService;
 
   @Override
   public void promotions(
       PromotionRequest request, StreamObserver<PromotionResponse> responseObserver) {
+    log.info("Handling promotions gRPC");
 
     PromotionRequest.DealCase dealCase = request.getDealCase();
 
     if (dealCase.equals(PromotionRequest.DealCase.DAILY_DEAL)) {
-
       log.info("Daily deal promotion requested");
-      getDailyDeals(responseObserver);
-
+      getDailyDeals(request.getPageRequest(), responseObserver);
     } else if (dealCase.equals(PromotionRequest.DealCase.SALE_DEAL)) {
-
       log.info("Sale promotion requested");
       getSaleDeals(responseObserver);
-
     } else if (dealCase.equals(PromotionRequest.DealCase.DEAL_NOT_SET)) {
-
       log.info("Deal oneof not set");
 
       Status status =
@@ -71,7 +63,6 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
 
   @Beta
   private void getSaleDeals(StreamObserver<PromotionResponse> responseObserver) {
-
     Status status =
         Status.newBuilder()
             .setCode(Code.UNIMPLEMENTED.getNumber())
@@ -81,65 +72,52 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
     responseObserver.onError(StatusProto.toStatusRuntimeException(status));
   }
 
-  private void getDailyDeals(StreamObserver<PromotionResponse> responseObserver) {
+  private void getDailyDeals(
+      PageRequestMessage pageRequest, StreamObserver<PromotionResponse> responseObserver) {
 
-    List<Long> plIds = takealotAPIService.getPLIDsOnPromotion(Promotion.DAILY_DEAL);
-    List<Product> products = productService.findAllByPLIDsIn(plIds);
+    Optional<PromotionEntity> latest =
+        promotionEntityService.findLatest(Promotion.DAILY_DEAL.getName());
 
-    // todo duplicate
-    if (products.size() != plIds.size()) {
-      log.warn("Not all Daily Deal items are in db, add one by one ...");
-      Optional<Seller> seller = sellerService.findByNameEquals("Takealot");
+    if (latest.isEmpty()) {
+      log.warn("No daily deals available");
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE.getNumber())
+              .setMessage("Daily deals unavailable")
+              .build();
 
-      if (seller.isEmpty()) {
-        log.warn("Failed to find Takealot seller!");
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INTERNAL.getNumber())
-                .setMessage("Failed to find Seller")
-                .build();
-
-        responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-        responseObserver.onCompleted();
-        return;
-      }
-
-      List<Long> productPLIds =
-          products.stream().map(Product::getPlId).collect(Collectors.toList());
-      plIds.removeAll(productPLIds);
-
-      for (Long plId : plIds) {
-        Optional<Long> productId =
-            addProductRPC.addProduct(
-                AddProductRPCRequestFactory.create(
-                    URI.create(getApiUrl(plId)), seller.get(), plId));
-
-        if (productId.isEmpty()) {
-          log.warn("Failed to add product for plId: {}", plId);
-          continue;
-        }
-
-        Optional<Product> p = productService.findOne(productId.get());
-
-        if (p.isPresent()) {
-          products.add(p.get());
-        } else {
-          log.warn("NO product for id: {}", productId);
-        }
-      }
+      responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+      return;
     }
 
-    List<ProductMessage> items = getLatestResponseItems(products);
+    List<Long> plIds =
+        latest.get().getProducts().stream().map(Product::getPlId).collect(Collectors.toList());
 
-    PromotionResponse latestResponse = PromotionResponse.newBuilder().addAllProducts(items).build();
+    Page<Product> page =
+        productService.findAllByPLIDsIn(
+            plIds, PageRequest.of(pageRequest.getPage(), pageRequest.getPageLen()));
+
+    List<ProductMessage> items = getLatestResponseItems(page.getContent());
+
+    PromotionResponse latestResponse =
+        PromotionResponse.newBuilder()
+            .addAllProducts(items)
+            .setPageResponse(getPageResponse(page))
+            .build();
 
     responseObserver.onNext(latestResponse);
   }
 
-  private String getApiUrl(long plId) {
-    return "https://api.takealot.com/rest/v-1-8-0/product-details/PLID"
-        + plId
-        + "?platform=desktop";
+  // todo duplicate in LatestGRPC#getPageResponse
+  private PageResponse getPageResponse(Page<Product> products) {
+    return PageResponse.newBuilder()
+        .setCurrentPageNumber(products.getNumber() + 1L)
+        .setIsFirstPage(products.isFirst())
+        .setIsLastPage(products.isLast())
+        .setLastPageNumber(products.getTotalPages())
+        .setTotalItems(products.getTotalElements())
+        .setPageSize(products.getNumberOfElements())
+        .build();
   }
 
   private List<ProductMessage> getLatestResponseItems(List<Product> products) {
@@ -166,7 +144,6 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
   }
 
   private String getProductImageUrl(Product p) {
-
     List<ProductImage> images = p.getImages();
 
     if (images.isEmpty()) {
@@ -177,9 +154,7 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
   }
 
   private String getPrice(Product f) {
-
     Optional<Price> price = priceService.findLatestByProductId(f.getId());
-
     return price.map(p -> "R" + p.getCurrentPrice()).orElse("R ???");
   }
 }

@@ -57,18 +57,17 @@ public class CrawlerEventListener extends ProductRequest {
         return;
       }
 
-      // todo looks like these are books ...
-      if (response.get().getProductBrand() == null){
-        log.info("{}: No product brand available", reqId);
-        return;
-      }
+      Brand brand;
 
-      Brand brand = brandService.findByNameEquals(response.get().getProductBrand());
+      if (response.get().isBook()) {
+        brand = brandService.findByNameEquals(response.get().getAuthors().get(0).getAuthor());
+      } else {
+        brand = brandService.findByNameEquals(response.get().getProductBrand());
+      }
 
       List<Category> categories = createCategories(response.get());
       Product product = createProduct(seller, plId, apiUrl, response.get(), brand, categories);
       createPrice(response.get(), product);
-
     } catch (Exception e) {
       log.debug("General exception", e);
     }
@@ -106,8 +105,8 @@ public class CrawlerEventListener extends ProductRequest {
                     .name(response.getProductName())
                     .url(response.getProductUrl().trim())
                     .apiEndpoint(apiUrl)
-                    .seller(seller)
-                    .brand(brand)
+                    .sellerId(seller.getId())
+                    .brandId(brand.getId())
                     .categories(categories)
                     .plId(plId)
                     .sku(response.getSKU())

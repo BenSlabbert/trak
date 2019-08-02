@@ -1,9 +1,10 @@
-package io.github.benslabbert.trak.api.model;
+package io.github.benslabbert.trak.worker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
 import lombok.Data;
+
+import java.io.Serializable;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

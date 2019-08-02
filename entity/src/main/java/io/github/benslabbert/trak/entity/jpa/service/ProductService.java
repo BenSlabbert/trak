@@ -4,10 +4,11 @@ import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.Seller;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface ProductService {
 
@@ -24,6 +25,8 @@ public interface ProductService {
   Page<Product> findAll(Seller seller, Pageable pageable);
 
   List<Product> findAllByPLIDsIn(List<Long> plIds);
+
+  Page<Product> findAllByPLIDsIn(List<Long> plIds, Pageable pageable);
 
   Optional<Product> findByPlID(long plId);
 }

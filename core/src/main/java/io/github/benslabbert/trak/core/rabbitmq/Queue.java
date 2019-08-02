@@ -7,6 +7,7 @@ public class Queue {
   public static final String PRODUCT_QUEUE = "product";
   public static final String PRICE_QUEUE = "price";
   public static final String SAVINGS_QUEUE = "savings";
+  public static final String PROMOTIONS_QUEUE = "promotions";
 
   private Queue() {}
 }

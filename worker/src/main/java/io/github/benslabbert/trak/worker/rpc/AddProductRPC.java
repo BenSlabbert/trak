@@ -1,7 +1,5 @@
 package io.github.benslabbert.trak.worker.rpc;
 
-import static io.github.benslabbert.trak.core.rabbitmq.RPC.ADD_PRODUCT_RPC_QUEUE;
-
 import io.github.benslabbert.trak.entity.jpa.*;
 import io.github.benslabbert.trak.entity.jpa.service.BrandService;
 import io.github.benslabbert.trak.entity.jpa.service.CategoryService;
@@ -10,15 +8,19 @@ import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequest;
 import io.github.benslabbert.trak.worker.response.ProductResponse;
 import io.github.benslabbert.trak.worker.util.ProductRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Component;
+
+import static io.github.benslabbert.trak.core.rabbitmq.RPC.ADD_PRODUCT_RPC_QUEUE;
 
 @Slf4j
 @Component
@@ -30,6 +32,7 @@ public class AddProductRPC extends ProductRequest {
   private final BrandService brandService;
   private final PriceService priceService;
 
+  @Nullable
   @RabbitListener(queues = ADD_PRODUCT_RPC_QUEUE)
   public Long addProduct(AddProductRPCRequest addProductRPCRequest) {
 
@@ -46,7 +49,7 @@ public class AddProductRPC extends ProductRequest {
         getProductResponse(addProductRPCRequest.getUri().toString());
 
     if (productResponse.isPresent()) {
-      log.info("got a product: {}", productResponse.get());
+      log.info("Got product: {}", productResponse.get());
       return createProduct(
               addProductRPCRequest.getSeller(),
               addProductRPCRequest.getPlId(),
@@ -61,7 +64,9 @@ public class AddProductRPC extends ProductRequest {
 
   private Product createProduct(Seller seller, long plId, URI apiUrl, ProductResponse response) {
 
+    log.info("Looking for brand: {}", response.getProductBrand());
     Brand brand = brandService.findByNameEquals(response.getProductBrand());
+    log.info("Found brand: {}", brand);
 
     List<Category> categories = createCategories(response);
 
@@ -71,8 +76,8 @@ public class AddProductRPC extends ProductRequest {
                 .name(response.getProductName())
                 .url(response.getProductUrl().trim())
                 .apiEndpoint(apiUrl.toString())
-                .seller(seller)
-                .brand(brand)
+                .sellerId(seller.getId())
+                .brandId(brand.getId())
                 .categories(categories)
                 .plId(plId)
                 .sku(response.getSKU())

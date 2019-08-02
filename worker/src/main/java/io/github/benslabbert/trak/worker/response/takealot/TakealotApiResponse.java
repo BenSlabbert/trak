@@ -72,6 +72,11 @@ public class TakealotApiResponse implements ProductResponse {
   }
 
   @Override
+  public List<Author> getAuthors() {
+    return core.getAuthors();
+  }
+
+  @Override
   public String getProductUrl() {
     return sharing.getUrl();
   }
@@ -98,5 +103,10 @@ public class TakealotApiResponse implements ProductResponse {
     }
 
     return images;
+  }
+
+  @Override
+  public boolean isBook() {
+    return core.getBrand() == null && !core.getAuthors().isEmpty();
   }
 }

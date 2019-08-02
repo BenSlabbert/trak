@@ -1,20 +1,11 @@
 package io.github.benslabbert.trak.worker.listener;
 
-import static io.github.benslabbert.trak.worker.config.Profiles.JPA_TEST_POFILE;
-import static org.junit.Assert.assertNotNull;
-
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
-import io.github.benslabbert.trak.entity.jpa.repo.BestSavingsRepo;
-import io.github.benslabbert.trak.entity.jpa.repo.PriceRepo;
-import io.github.benslabbert.trak.entity.jpa.repo.ProductRepo;
-import io.github.benslabbert.trak.entity.jpa.service.BestSavingsServiceImpl;
-import io.github.benslabbert.trak.entity.jpa.service.PriceServiceImpl;
-import io.github.benslabbert.trak.entity.jpa.service.ProductServiceImpl;
+import io.github.benslabbert.trak.entity.jpa.repo.*;
+import io.github.benslabbert.trak.entity.jpa.service.*;
 import io.github.benslabbert.trak.worker.config.JPATestConfig;
 import io.github.benslabbert.trak.worker.model.ProductSavings;
-import java.util.List;
-import java.util.Random;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,6 +17,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Random;
+
+import static io.github.benslabbert.trak.worker.config.Profiles.JPA_TEST_POFILE;
+import static org.junit.Assert.assertNotNull;
+
 @Transactional
 @RunWith(SpringRunner.class)
 @ActiveProfiles(profiles = JPA_TEST_POFILE)
@@ -34,6 +31,8 @@ public class BiggestSavingsListenerTest {
 
   @Autowired private BestSavingsRepo bestSavingsRepo;
   @Autowired private ProductRepo productRepo;
+  @Autowired private SellerRepo sellerRepo;
+  @Autowired private BrandRepo brandRepo;
   @Autowired private PriceRepo priceRepo;
 
   private BiggestSavingsListener listener;
@@ -56,7 +55,8 @@ public class BiggestSavingsListenerTest {
     listener =
         new BiggestSavingsListener(
             new BestSavingsServiceImpl(bestSavingsRepo),
-            new ProductServiceImpl(productRepo),
+            new ProductServiceImpl(
+                productRepo, new BrandServiceImpl(brandRepo), new SellerServiceImpl(sellerRepo)),
             new PriceServiceImpl(priceRepo));
   }
 

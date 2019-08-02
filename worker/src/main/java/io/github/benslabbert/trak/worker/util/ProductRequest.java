@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -34,6 +35,9 @@ public abstract class ProductRequest {
           e.getMessage(),
           url,
           e.getRawStatusCode());
+      return Optional.empty();
+    } catch (ResourceAccessException e) {
+      log.warn("Failed to Access API: " + url + " with exception:\n", e);
       return Optional.empty();
     } catch (Exception e) {
       log.warn("Failed to deserialize api response: " + url, e);

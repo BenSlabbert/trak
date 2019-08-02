@@ -7,11 +7,11 @@ services:
   ######################
 
   engine:
-    image: benjaminslabbert/trak_engine:1.0.3-2019-04-29
+    image: benjaminslabbert/trak_engine:1.0.3-2019-07-30
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-      - "JAVA_OPTS=-Xms256m -Xmx256m"
+      - JAVA_OPTS=-Xmx128m -Xms128m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
     depends_on:
       - rds
       - rabbit
@@ -34,11 +34,11 @@ services:
         window: 120s
 
   worker:
-    image: benjaminslabbert/trak_worker:1.0.3-2019-04-29
+    image: benjaminslabbert/trak_worker:1.0.3-2019-07-30
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-      - "JAVA_OPTS=-Xms256m -Xmx256m"
+      - JAVA_OPTS=-Xmx128m -Xms128m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
     depends_on:
       - rds
       - rabbit
@@ -61,13 +61,13 @@ services:
         window: 120s
 
   search:
-    image: benjaminslabbert/trak_search:1.0.3-2019-04-29
+    image: benjaminslabbert/trak_search:1.0.3-2019-07-30
     ports:
-      - 50052:50052
+      - 50052
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-      - "JAVA_OPTS=-Xms256m -Xmx256m"
+      - JAVA_OPTS=-Xmx128m -Xms128m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
     depends_on:
       - es
       - redis
@@ -90,11 +90,11 @@ services:
         window: 120s
 
   api:
-    image: benjaminslabbert/trak_api:1.0.3-2019-04-29
+    image: benjaminslabbert/trak_api:1.0.3-2019-07-30
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-      - "JAVA_OPTS=-Xms256m -Xmx256m"
+      - JAVA_OPTS=-Xmx128m -Xms128m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
     depends_on:
       - rds
       - rabbit
@@ -118,7 +118,7 @@ services:
         window: 120s
 
   ui:
-    image: benjaminslabbert/trak_ui:1.0.2
+    image: benjaminslabbert/trak_ui:1.0.4-1563991595
     ports:
       - 3000:3000
     depends_on:

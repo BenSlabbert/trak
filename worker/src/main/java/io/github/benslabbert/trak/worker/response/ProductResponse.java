@@ -1,5 +1,7 @@
 package io.github.benslabbert.trak.worker.response;
 
+import io.github.benslabbert.trak.worker.response.takealot.Author;
+
 import java.util.List;
 
 public interface ProductResponse {
@@ -14,6 +16,8 @@ public interface ProductResponse {
 
   String getProductBrand();
 
+  List<Author> getAuthors();
+
   String getProductUrl();
 
   Double getRating();
@@ -21,4 +25,6 @@ public interface ProductResponse {
   List<String> getCategories();
 
   List<String> getImageUrls();
+
+  boolean isBook();
 }

@@ -1,9 +1,5 @@
 package io.github.benslabbert.trak.engine;
 
-import static io.github.benslabbert.trak.core.rabbitmq.Header.X_MESSAGE_TTL;
-import static io.github.benslabbert.trak.core.rabbitmq.Queue.*;
-
-import java.util.HashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
 import org.springframework.boot.SpringApplication;
@@ -14,6 +10,11 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import java.util.HashMap;
+
+import static io.github.benslabbert.trak.core.rabbitmq.Header.X_MESSAGE_TTL;
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.*;
 
 @Slf4j
 @EnableAsync
@@ -66,6 +67,11 @@ public class EngineApplication {
   @Bean
   public Queue priceQueue() {
     return new Queue(PRICE_QUEUE, true, false, false, queueProperties());
+  }
+
+  @Bean
+  public Queue promotionQueue() {
+    return new Queue(PROMOTIONS_QUEUE, true, false, false, queueProperties());
   }
 
   @Bean

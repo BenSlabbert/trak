@@ -48,13 +48,13 @@
     <dependency>
       <groupId>io.github.benslabbert.trak</groupId>
       <artifactId>entity</artifactId>
-      <version>1.0.2-SNAPSHOT</version>
+      <version>1.0.3-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>com.github.BenSlabbert</groupId>
       <artifactId>trak-gRPC</artifactId>
-      <version>master-SNAPSHOT</version>
+      <version>19fbdda270</version>
     </dependency>
 
     <dependency>

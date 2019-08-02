@@ -26,17 +26,36 @@ import static io.github.benslabbert.trak.core.cache.CacheNames.PRODUCT_CACHE;
 public class ProductServiceImpl extends RetryPersist<Product, Long> implements ProductService {
 
   private final ProductRepo repo;
+  private final BrandService brandService;
+  private final SellerService sellerService;
 
   @Override
   @CacheEvict(value = PRODUCT_CACHE, allEntries = true)
-  public Product save(Product product) {
-    return retry(product, 1, repo);
+  public synchronized Product save(Product product) {
+    log.info(
+        "Saving product: {} with brandId: {} and sellerId: {}",
+        product,
+        product.getBrandId(),
+        product.getSellerId());
+
+    Optional<Product> p = repo.findByPlIdEquals(product.getPlId());
+    return p.orElseGet(() -> retry(product, 1, repo));
   }
 
   @Override
   @Cacheable(value = PRODUCT_CACHE, key = "#id", unless = "#result == null")
   public Optional<Product> findOne(long id) {
-    return repo.findById(id);
+    Optional<Product> p = repo.findById(id);
+
+    if (p.isPresent()) {
+      Optional<Brand> brand = brandService.findById(p.get().getBrandId());
+      brand.ifPresent(value -> p.get().setBrand(value));
+
+      Optional<Seller> seller = sellerService.findById(p.get().getSellerId());
+      seller.ifPresent(s -> p.get().setSeller(s));
+    }
+
+    return p;
   }
 
   @Override
@@ -76,9 +95,15 @@ public class ProductServiceImpl extends RetryPersist<Product, Long> implements P
   }
 
   @Override
-  @Cacheable(value = PRODUCT_CACHE, key = "#plIds.toString()", unless = "#result == null")
+  @Cacheable(value = PRODUCT_CACHE, unless = "#result == null")
   public List<Product> findAllByPLIDsIn(List<Long> plIds) {
     return repo.findAllByPlIdIn(plIds);
+  }
+
+  @Override
+  @Cacheable(value = PRODUCT_CACHE, unless = "#result == null")
+  public Page<Product> findAllByPLIDsIn(List<Long> plIds, Pageable pageable) {
+    return repo.findAllByPlIdIn(plIds, pageable);
   }
 
   @Override

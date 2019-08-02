@@ -1,10 +1,11 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
-import javax.persistence.OptimisticLockException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+
+import javax.persistence.OptimisticLockException;
 
 @Slf4j
 public abstract class RetryPersist<T, ID> {
@@ -17,18 +18,23 @@ public abstract class RetryPersist<T, ID> {
 
     if (retry > 3) {
       log.error("Failed to save entity: Product");
-      throw new OptimisticLockingFailureException("Failed to persist product!");
+      throw new OptimisticLockingFailureException("Failed to persist!");
     } else if (retry > 1) {
       log.warn("Lock exception, retrying... {}", retry);
+      try {
+        Thread.sleep(100 * retry);
+      } catch (InterruptedException e) {
+        throw new OptimisticLockingFailureException("Failed to persist!");
+      }
     }
 
     try {
       return repo.saveAndFlush(object);
     } catch (OptimisticLockException e) {
-      log.warn("OptimisticLockException while saving product! Retrying ...");
+      log.warn("OptimisticLockException while saving! Retrying ...");
       return retry(object, ++retry, repo);
     } catch (ObjectOptimisticLockingFailureException e) {
-      log.warn("ObjectOptimisticLockingFailureException while saving product! Retrying ...");
+      log.warn("ObjectOptimisticLockingFailureException while saving! Retrying ...");
       return retry(object, ++retry, repo);
     }
   }

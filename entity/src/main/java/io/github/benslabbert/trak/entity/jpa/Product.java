@@ -1,11 +1,12 @@
 package io.github.benslabbert.trak.entity.jpa;
 
-import java.io.Serializable;
-import java.util.List;
-import javax.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(schema = Schema.TRAK, name = "product")
@@ -42,13 +43,11 @@ public class Product extends TimestampEntity implements Serializable {
   @Column(name = "pl_id")
   private Long plId;
 
-  @OneToOne
-  @JoinColumn(name = "seller_id", referencedColumnName = "id")
-  private Seller seller;
+  @Column(name = "seller_id")
+  private Long sellerId;
 
-  @OneToOne
-  @JoinColumn(name = "brand_id", referencedColumnName = "id")
-  private Brand brand;
+  @Column(name = "brand_id")
+  private Long brandId;
 
   @OneToMany
   @JoinTable(
@@ -67,4 +66,8 @@ public class Product extends TimestampEntity implements Serializable {
       inverseJoinColumns = @JoinColumn(name = "product_image_id"))
   @LazyCollection(LazyCollectionOption.FALSE)
   private List<ProductImage> images;
+
+  @Transient private Brand brand;
+
+  @Transient private Seller seller;
 }

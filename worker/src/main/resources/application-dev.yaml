@@ -1,12 +1,12 @@
 server:
-  port: 8082
+  port: ${TOMCAT_PORT:8082}
 spring:
   config:
     name: trak-worker
   liquibase:
     change-log: classpath:liquibase.sql
   jpa:
-    show-sql: true
+    show-sql: false
   rabbitmq:
     username: trak
     password: password
