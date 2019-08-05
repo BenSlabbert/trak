@@ -35,7 +35,6 @@ public class AddProductRPC extends ProductRequest {
   @Nullable
   @RabbitListener(queues = ADD_PRODUCT_RPC_QUEUE)
   public Long addProduct(AddProductRPCRequest addProductRPCRequest) {
-
     log.info("Adding product: {}", addProductRPCRequest);
 
     Optional<Product> product = productService.findByPlID(addProductRPCRequest.getPlId());
@@ -63,7 +62,6 @@ public class AddProductRPC extends ProductRequest {
   }
 
   private Product createProduct(Seller seller, long plId, URI apiUrl, ProductResponse response) {
-
     log.info("Looking for brand: {}", response.getProductBrand());
     Brand brand = brandService.findByNameEquals(response.getProductBrand());
     log.info("Found brand: {}", brand);

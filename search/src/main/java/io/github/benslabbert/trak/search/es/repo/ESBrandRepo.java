@@ -8,6 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ESBrandRepo extends ElasticsearchRepository<ESBrand, String> {
-
   Page<ESBrand> findAllByNameContaining(String name, Pageable pageable);
 }

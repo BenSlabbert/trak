@@ -16,7 +16,6 @@ import java.util.Optional;
 public abstract class ProductRequest {
 
   protected Optional<ProductResponse> getProductResponse(String url) {
-
     try {
       RestTemplate restTemplate = new RestTemplate();
       // todo this appears to be broken when in the container

@@ -1,5 +1,6 @@
 package io.github.benslabbert.trak.api.grpc;
 
+import io.github.benslabbert.trak.api.grpc.service.ProductGRPC;
 import io.github.benslabbert.trak.api.rabbitmq.rpc.AddProductRPC;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;

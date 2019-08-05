@@ -5,6 +5,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ESProductService {
-
   Page<ESProduct> findProductByNameLike(String name, Pageable pageable);
 }

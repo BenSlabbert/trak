@@ -24,7 +24,6 @@ import static io.github.benslabbert.trak.core.rabbitmq.Queue.*;
 public class EngineApplication {
 
   public static void main(String[] args) {
-
     try {
       SpringApplication.run(EngineApplication.class, args);
     } catch (Exception e) {
@@ -32,11 +31,11 @@ public class EngineApplication {
     }
   }
 
-  @Primary
   @Bean
+  @Primary
   public ThreadPoolTaskExecutor executor() {
-
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
     executor.setCorePoolSize(4);
     executor.setMaxPoolSize(10);
     executor.setQueueCapacity(10);
@@ -47,10 +46,8 @@ public class EngineApplication {
   }
 
   private HashMap<String, Object> queueProperties() {
-
     HashMap<String, Object> arguments = new HashMap<>();
     arguments.put(X_MESSAGE_TTL, 300000);
-
     return arguments;
   }
 

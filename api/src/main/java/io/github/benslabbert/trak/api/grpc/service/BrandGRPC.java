@@ -1,19 +1,22 @@
-package io.github.benslabbert.trak.api.grpc;
+package io.github.benslabbert.trak.api.grpc.service;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.github.benslabbert.trak.core.grpc.ClientCancelRequest;
 import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.service.BrandService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.grpc.*;
+import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -65,6 +68,12 @@ public class BrandGRPC extends BrandServiceGrpc.BrandServiceImplBase {
           productServiceBlockingStub
               .product(ProductRequest.newBuilder().setProductId(product.getId()).build())
               .getProduct());
+    }
+
+    if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      responseObserver.onCompleted();
+      return;
     }
 
     builder.setBrandId(brand.get().getId());

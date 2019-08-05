@@ -1,7 +1,5 @@
 package io.github.benslabbert.trak.search.config;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -12,6 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 @Slf4j
 @Configuration
@@ -39,7 +40,6 @@ public class ESTransportClientConfig {
   }
 
   private Client getClient(InetAddress localHost) {
-
     Settings settings = Settings.builder().put("cluster.name", esClusterName).build();
 
     TransportClient client = new PreBuiltTransportClient(settings);

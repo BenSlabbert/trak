@@ -5,6 +5,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ESBrandService {
-
   Page<ESBrand> findBrandByNameLike(String name, Pageable pageable);
 }

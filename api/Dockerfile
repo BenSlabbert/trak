@@ -1,23 +1,6 @@
 FROM azul/zulu-openjdk-alpine:11.0.3-jre
 
-ENV JAVA_OPTS="-XX:MaxRAM=300M \
-               -XX:InitialRAMPercentage=70.0 \
-               -XX:MaxRAMPercentage=70.0 \
-               -XX:MinRAMPercentage=25.0 \
-               -XX:+TieredCompilation \
-               -Xss512k \
-               -Xverify:none \
-               -XX:+UseG1GC \
-               -XX:+UseStringDeduplication \
-               -XX:+CMSClassUnloadingEnabled \
-               -XX:MinHeapFreeRatio=10 \
-               -XX:MaxHeapFreeRatio=40 \
-               -XshowSettings:vm \
-               -XX:NativeMemoryTracking=summary \
-               -XX:+UnlockDiagnosticVMOptions \
-               -XX:+PrintNMTStatistics \
-               -XX:+HeapDumpOnOutOfMemoryError \
-               -noverify"
+ENV JAVA_OPTS="-Xmx128m -Xms128m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify"
 
 COPY target/lib lib
 ARG JAR_FILE

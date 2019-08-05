@@ -1,5 +1,6 @@
 package io.github.benslabbert.trak.search.grpc;
 
+import io.github.benslabbert.trak.core.grpc.ClientCancelRequest;
 import io.github.benslabbert.trak.grpc.SearchRequest;
 import io.github.benslabbert.trak.grpc.SearchResponse;
 import io.github.benslabbert.trak.grpc.SearchResult;
@@ -8,16 +9,20 @@ import io.github.benslabbert.trak.search.es.model.ESSearchResult;
 import io.github.benslabbert.trak.search.es.service.ESBrandService;
 import io.github.benslabbert.trak.search.es.service.ESCategoryService;
 import io.github.benslabbert.trak.search.es.service.ESProductService;
+import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class SearchGRPC extends SearchServiceGrpc.SearchServiceImplBase {
 
   private final ESCategoryService categoryService;
@@ -26,48 +31,50 @@ public class SearchGRPC extends SearchServiceGrpc.SearchServiceImplBase {
 
   private static final PageRequest pageable = PageRequest.of(0, 20);
 
-  public SearchGRPC(
-      ESCategoryService categoryService,
-      ESProductService productService,
-      ESBrandService brandService) {
-
-    this.categoryService = categoryService;
-    this.productService = productService;
-    this.brandService = brandService;
-  }
-
   @Override
   public void brandSearch(SearchRequest request, StreamObserver<SearchResponse> responseObserver) {
+    SearchResponse response =
+        buildSearchResponse(brandService.findBrandByNameLike(request.getSearch(), pageable));
 
-    log.debug("Searching for brand: {}", request.getSearch());
+    if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      responseObserver.onCompleted();
+      return;
+    }
 
-    responseObserver.onNext(
-        buildSearchResponse(brandService.findBrandByNameLike(request.getSearch(), pageable)));
-
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
   public void categorySearch(
       SearchRequest request, StreamObserver<SearchResponse> responseObserver) {
+    SearchResponse response =
+        buildSearchResponse(categoryService.findProductByNameLike(request.getSearch(), pageable));
 
-    log.debug("Searching for category: {}", request.getSearch());
+    if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      responseObserver.onCompleted();
+      return;
+    }
 
-    responseObserver.onNext(
-        buildSearchResponse(categoryService.findProductByNameLike(request.getSearch(), pageable)));
-
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
   public void productSearch(
       SearchRequest request, StreamObserver<SearchResponse> responseObserver) {
+    SearchResponse response =
+        buildSearchResponse(productService.findProductByNameLike(request.getSearch(), pageable));
 
-    log.debug("Searching for product: {}", request.getSearch());
+    if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      responseObserver.onCompleted();
+      return;
+    }
 
-    responseObserver.onNext(
-        buildSearchResponse(productService.findProductByNameLike(request.getSearch(), pageable)));
-
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 

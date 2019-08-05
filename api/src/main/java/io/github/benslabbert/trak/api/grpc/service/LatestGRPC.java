@@ -1,38 +1,36 @@
-package io.github.benslabbert.trak.api.grpc;
+package io.github.benslabbert.trak.api.grpc.service;
 
+import io.github.benslabbert.trak.core.grpc.ClientCancelRequest;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.ProductImage;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.grpc.*;
+import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class LatestGRPC extends LatestServiceGrpc.LatestServiceImplBase {
 
   private final ProductService productService;
   private final PriceService priceService;
 
-  public LatestGRPC(ProductService productService, PriceService priceService) {
-    this.productService = productService;
-    this.priceService = priceService;
-  }
-
   @Override
   public void latest(Empty request, StreamObserver<LatestResponse> responseObserver) {
-
-    log.debug("Getting latest products");
-
     Page<Product> products =
         productService.findAll(PageRequest.of(0, 12, Sort.by(Sort.Direction.DESC, "id")));
 
@@ -42,6 +40,12 @@ public class LatestGRPC extends LatestServiceGrpc.LatestServiceImplBase {
 
     LatestResponse latestResponse =
         LatestResponse.newBuilder().addAllProducts(items).setPage(pageResponse).build();
+
+    if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      responseObserver.onCompleted();
+      return;
+    }
 
     responseObserver.onNext(latestResponse);
     responseObserver.onCompleted();
@@ -59,21 +63,21 @@ public class LatestGRPC extends LatestServiceGrpc.LatestServiceImplBase {
   }
 
   private List<ProductMessage> getLatestResponseItems(Page<Product> products) {
-    return products.getContent().stream()
-        .map(
-            f ->
-                ProductMessage.newBuilder()
-                    .setId(f.getId())
-                    .setName(f.getName())
-                    .setPrice(getPrice(f))
-                    .setProductUrl(f.getUrl())
-                    .setImageUrl(getProductImageUrl(f))
-                    .build())
-        .collect(Collectors.toList());
+    return products.getContent().stream().map(getProduct()).collect(Collectors.toList());
+  }
+
+  private Function<Product, ProductMessage> getProduct() {
+    return p ->
+        ProductMessage.newBuilder()
+            .setId(p.getId())
+            .setName(p.getName())
+            .setPrice(getPrice(p))
+            .setProductUrl(p.getUrl())
+            .setImageUrl(getProductImageUrl(p))
+            .build();
   }
 
   private String getProductImageUrl(Product p) {
-
     List<ProductImage> images = p.getImages();
 
     if (images.isEmpty()) {
@@ -84,9 +88,7 @@ public class LatestGRPC extends LatestServiceGrpc.LatestServiceImplBase {
   }
 
   private String getPrice(Product f) {
-
     Optional<Price> price = priceService.findLatestByProductId(f.getId());
-
     return price.map(p -> "R" + p.getCurrentPrice()).orElse("R ???");
   }
 }

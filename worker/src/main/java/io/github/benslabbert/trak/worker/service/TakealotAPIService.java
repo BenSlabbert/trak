@@ -33,7 +33,6 @@ public class TakealotAPIService {
   }
 
   public Optional<TakealotPromotion> getTakealotPromotion() {
-
     ResponseEntity<TakealotPromotion> resp =
         restTemplate.exchange(
             URI.create("https://api.takealot.com/rest/v-1-8-0/promotions?is_bundle_included=True"),
@@ -54,12 +53,10 @@ public class TakealotAPIService {
   }
 
   private List<Long> getPLIDsOnPromotion(long promotionId) {
-
     int start = 0;
     List<Long> ids = new ArrayList<>(300);
 
     while (true) {
-
       log.info("Getting promotions: {}", promotionId);
 
       ResponseEntity<TakealotDailyDeal> resp =
@@ -94,7 +91,6 @@ public class TakealotAPIService {
   }
 
   public PromotionIds getPLIDsOnPromotion(Promotion promotion) {
-
     Optional<Long> promotionId = getPromotionId(promotion.getName());
 
     if (promotionId.isEmpty()) {
@@ -110,7 +106,6 @@ public class TakealotAPIService {
   }
 
   public PromotionIds getPLIDsOnPromotion(String promotionName) {
-
     Optional<Long> promotionId = getPromotionId(promotionName);
 
     if (promotionId.isEmpty()) {

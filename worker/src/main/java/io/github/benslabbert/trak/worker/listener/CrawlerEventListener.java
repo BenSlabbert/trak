@@ -34,7 +34,6 @@ public class CrawlerEventListener extends ProductRequest {
 
   @RabbitHandler
   public void receive(CrawlerEvent crawlerEvent) {
-
     log.info("{}: Processing request", crawlerEvent.getRequestId());
 
     long productId = crawlerEvent.getProductId();
@@ -46,7 +45,6 @@ public class CrawlerEventListener extends ProductRequest {
   }
 
   private void findNewProduct(String reqId, Seller seller, long plId) {
-
     try {
       String apiUrl = getApiUrl(plId);
 

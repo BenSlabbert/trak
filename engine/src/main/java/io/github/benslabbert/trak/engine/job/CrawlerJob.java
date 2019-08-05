@@ -33,7 +33,6 @@ public class CrawlerJob extends PageOverAll<Seller> implements Runnable {
   @Override
   @Scheduled(initialDelay = 0L, fixedDelay = 5000L)
   public void run() {
-
     log.info("Starting job");
 
     try {
@@ -52,7 +51,6 @@ public class CrawlerJob extends PageOverAll<Seller> implements Runnable {
 
   @Override
   protected void processItem(Seller seller) {
-
     Optional<Crawler> crawler = crawlerService.findBySeller(seller);
 
     if (crawler.isPresent()) {

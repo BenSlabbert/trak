@@ -1,8 +1,9 @@
-package io.github.benslabbert.trak.api.grpc;
+package io.github.benslabbert.trak.api.grpc.service;
 
 import com.google.common.annotations.Beta;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.github.benslabbert.trak.core.grpc.ClientCancelRequest;
 import io.github.benslabbert.trak.core.model.Promotion;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
@@ -12,6 +13,7 @@ import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.jpa.service.PromotionEntityService;
 import io.github.benslabbert.trak.grpc.*;
+import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,8 +39,6 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
   @Override
   public void promotions(
       PromotionRequest request, StreamObserver<PromotionResponse> responseObserver) {
-    log.info("Handling promotions gRPC");
-
     PromotionRequest.DealCase dealCase = request.getDealCase();
 
     if (dealCase.equals(PromotionRequest.DealCase.DAILY_DEAL)) {
@@ -105,6 +106,11 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
             .setPageResponse(getPageResponse(page))
             .build();
 
+    if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      return;
+    }
+
     responseObserver.onNext(latestResponse);
   }
 
@@ -121,25 +127,24 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
   }
 
   private List<ProductMessage> getLatestResponseItems(List<Product> products) {
-    return products.stream()
-        .map(
-            f ->
-                ProductMessage.newBuilder()
-                    .addAllCategories(
-                        f.getCategories().stream()
-                            .map(
-                                c ->
-                                    CategoryMessage.newBuilder()
-                                        .setId(c.getId())
-                                        .setName(c.getName())
-                                        .build())
-                            .collect(Collectors.toList()))
-                    .setId(f.getId())
-                    .setName(f.getName())
-                    .setPrice(getPrice(f))
-                    .setProductUrl(f.getUrl())
-                    .setImageUrl(getProductImageUrl(f))
-                    .build())
+    return products.stream().map(mapProduct()).collect(Collectors.toList());
+  }
+
+  private Function<Product, ProductMessage> mapProduct() {
+    return p ->
+        ProductMessage.newBuilder()
+            .addAllCategories(addCategories(p))
+            .setId(p.getId())
+            .setName(p.getName())
+            .setPrice(getPrice(p))
+            .setProductUrl(p.getUrl())
+            .setImageUrl(getProductImageUrl(p))
+            .build();
+  }
+
+  private List<CategoryMessage> addCategories(Product p) {
+    return p.getCategories().stream()
+        .map(c -> CategoryMessage.newBuilder().setId(c.getId()).setName(c.getName()).build())
         .collect(Collectors.toList());
   }
 

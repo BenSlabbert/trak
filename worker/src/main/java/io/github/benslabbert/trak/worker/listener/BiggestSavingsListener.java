@@ -1,7 +1,5 @@
 package io.github.benslabbert.trak.worker.listener;
 
-import static io.github.benslabbert.trak.core.rabbitmq.Queue.SAVINGS_QUEUE;
-
 import io.github.benslabbert.trak.core.pagination.PageOverAll;
 import io.github.benslabbert.trak.entity.jpa.BestSaving;
 import io.github.benslabbert.trak.entity.jpa.Price;
@@ -10,11 +8,6 @@ import io.github.benslabbert.trak.entity.jpa.service.BestSavingsService;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.worker.model.ProductSavings;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -22,6 +15,14 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.SAVINGS_QUEUE;
 
 @Slf4j
 @Component
@@ -37,8 +38,8 @@ public class BiggestSavingsListener extends PageOverAll<Product> {
 
   @RabbitHandler
   public void processSavingsEvent(String uuid) {
-
     log.info("{}: Processing biggest savings event", uuid);
+    savings.clear();
 
     try {
       pageOverAll(productService.findAll(PageRequest.of(0, 1000)));
@@ -66,7 +67,6 @@ public class BiggestSavingsListener extends PageOverAll<Product> {
 
   @Override
   protected void processItem(Product item) {
-
     Optional<Price> latestPrice = priceService.findLatestByProductId(item.getId());
 
     if (latestPrice.isEmpty()) {

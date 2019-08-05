@@ -1,16 +1,11 @@
 package io.github.benslabbert.trak.worker.listener;
 
-import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRICE_QUEUE;
-
 import io.github.benslabbert.trak.core.pagination.PageOverContent;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.price.clean.PriceCleanUpEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -19,6 +14,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRICE_QUEUE;
 
 @Slf4j
 @Component
@@ -31,7 +32,6 @@ public class PriceCleanupEventListener extends PageOverContent<Price> {
 
   @RabbitHandler
   public void receive(PriceCleanUpEvent event) {
-
     long start = System.currentTimeMillis();
     log.debug("{}: Processing event, productId: {}", event.getRequestId(), event.getProductId());
 
@@ -49,12 +49,9 @@ public class PriceCleanupEventListener extends PageOverContent<Price> {
   }
 
   private void cleanPrices(Product product) {
-
-    Page<Price> prices =
+    pageOverContent(
         priceService.findAllByProductId(
-            product.getId(), PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "created")));
-
-    pageOverContent(prices);
+            product.getId(), PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "created"))));
   }
 
   @Override
@@ -65,7 +62,6 @@ public class PriceCleanupEventListener extends PageOverContent<Price> {
 
   @Override
   protected void processContent(List<Price> content) {
-
     List<Price> removeList = new ArrayList<>();
 
     for (int i = 0; i < content.size() - 1; i++) {

@@ -27,7 +27,6 @@ public class PriceCleanUpJob extends PageOverAll<Product> implements Runnable {
   @Override
   @Scheduled(cron = "0 0 0 0/1 * ?")
   public void run() {
-
     log.info("Starting job");
 
     try {

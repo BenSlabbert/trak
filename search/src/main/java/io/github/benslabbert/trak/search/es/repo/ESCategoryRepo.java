@@ -8,6 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ESCategoryRepo extends ElasticsearchRepository<ESCategory, String> {
-
   Page<ESCategory> findAllByNameContaining(String name, Pageable pageable);
 }

@@ -28,15 +28,12 @@ public class AddProductRPC {
    */
   @RabbitMQRPC(message = "Add product RPC")
   public Optional<Long> addProduct(AddProductRPCRequest addProductRPCRequest) {
-
     Long productId =
         (Long)
             rabbitTemplate.convertSendAndReceive(
                 addProductDirectExchange.getName(),
                 ADD_PRODUCT_RPC_ROUTING_KEY,
                 addProductRPCRequest);
-
-    log.info("Product? {}", productId);
 
     return Optional.ofNullable(productId);
   }

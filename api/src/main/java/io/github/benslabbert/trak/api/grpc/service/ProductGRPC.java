@@ -1,8 +1,9 @@
-package io.github.benslabbert.trak.api.grpc;
+package io.github.benslabbert.trak.api.grpc.service;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.github.benslabbert.trak.api.rabbitmq.rpc.AddProductRPC;
+import io.github.benslabbert.trak.core.grpc.ClientCancelRequest;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.ProductImage;
@@ -12,6 +13,7 @@ import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
 import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequestFactory;
 import io.github.benslabbert.trak.grpc.*;
+import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +43,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   @Override
   public void addProduct(
       AddProductRequest request, StreamObserver<AddProductResponse> responseObserver) {
-
     String requestPlId = request.getPlId();
 
     if (StringUtils.isEmpty(requestPlId)) {
@@ -111,13 +112,18 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
       return;
     }
 
+    if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      responseObserver.onCompleted();
+      return;
+    }
+
     log.info("Got productId: {}", productId);
     responseObserver.onNext(AddProductResponse.newBuilder().setProductId(productId.get()).build());
     responseObserver.onCompleted();
   }
 
   private long getPLID(URI uri) {
-
     String s = uri.toString();
     return getPLID(s.substring(s.indexOf("PLID")).trim());
   }
@@ -133,7 +139,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   }
 
   private boolean isPLID(String plId) {
-
     plId = plId.toUpperCase();
 
     if (plId.startsWith("PLID")) {
@@ -145,7 +150,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   }
 
   private boolean isNumeric(String plId) {
-
     try {
       long l = Long.parseLong(plId);
       log.debug("Converted {} to number: {}", plId, l);
@@ -157,7 +161,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   }
 
   private boolean isURL(String url) {
-
     if (!url.contains("https")) return false;
 
     try {
@@ -174,18 +177,19 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
 
   @Override
   public void product(ProductRequest request, StreamObserver<ProductResponse> responseObserver) {
-
     Optional<Product> product = productService.findOne(request.getProductId());
 
-    log.debug("Product request");
-
     if (product.isPresent()) {
-
       ProductStatsResponse statsResponse = getProductStatsResponse(request);
       ProductResponse productResponse = getProductResponse(product.get(), statsResponse);
 
+      if (Context.current().isCancelled()) {
+        responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+        responseObserver.onCompleted();
+        return;
+      }
+
       responseObserver.onNext(productResponse);
-      responseObserver.onCompleted();
 
     } else {
       Status status =
@@ -195,41 +199,44 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-      responseObserver.onCompleted();
     }
+
+    responseObserver.onCompleted();
   }
 
   private ProductResponse getProductResponse(Product product, ProductStatsResponse statsResponse) {
-
     return ProductResponse.newBuilder()
-        .setProduct(
-            ProductMessage.newBuilder()
-                .setId(product.getId())
-                .setName(product.getName())
-                .setPrice(getPrice(product))
-                .setProductUrl(product.getUrl())
-                .setImageUrl(getProductImageUrl(product))
-                .setBrand(
-                    BrandMessage.newBuilder()
-                        .setName(product.getBrand().getName())
-                        .setId(product.getBrand().getId())
-                        .build())
-                .addAllCategories(
-                    product.getCategories().stream()
-                        .map(
-                            c ->
-                                CategoryMessage.newBuilder()
-                                    .setId(c.getId())
-                                    .setName(c.getName())
-                                    .build())
-                        .collect(Collectors.toList()))
-                .build())
+        .setProduct(getProduct(product))
         .setStats(statsResponse)
         .build();
   }
 
-  private ProductStatsResponse getProductStatsResponse(ProductRequest request) {
+  private ProductMessage getProduct(Product p) {
+    return ProductMessage.newBuilder()
+        .setId(p.getId())
+        .setName(p.getName())
+        .setPrice(getPrice(p))
+        .setProductUrl(p.getUrl())
+        .setImageUrl(getProductImageUrl(p))
+        .setBrand(getBrand(p))
+        .addAllCategories(addCategories(p))
+        .build();
+  }
 
+  private List<CategoryMessage> addCategories(Product p) {
+    return p.getCategories().stream()
+        .map(c -> CategoryMessage.newBuilder().setId(c.getId()).setName(c.getName()).build())
+        .collect(Collectors.toList());
+  }
+
+  private BrandMessage getBrand(Product p) {
+    return BrandMessage.newBuilder()
+        .setName(p.getBrand().getName())
+        .setId(p.getBrand().getId())
+        .build();
+  }
+
+  private ProductStatsResponse getProductStatsResponse(ProductRequest request) {
     Page<Price> prices =
         priceService.findAllByProductId(request.getProductId(), PageRequest.of(0, 10));
 
@@ -265,7 +272,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   }
 
   private ChartDataMessage getChartData(long productId) {
-
     List<Price> prices = priceService.findAllByCreatedGreaterThan(productId, new Date(0L));
 
     List<String> labels =
@@ -299,7 +305,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   }
 
   private String getProductImageUrl(Product p) {
-
     List<ProductImage> images = p.getImages();
 
     if (images.isEmpty()) {
@@ -310,9 +315,7 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   }
 
   private String getPrice(Product f) {
-
     Optional<Price> price = priceService.findLatestByProductId(f.getId());
-
     return price.map(p -> "R" + p.getCurrentPrice()).orElse("R ???");
   }
 }
