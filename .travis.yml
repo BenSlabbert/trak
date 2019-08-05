@@ -1,5 +1,8 @@
 language: java
 
+services:
+  - docker
+
 jdk:
   - openjdk11
 
@@ -10,6 +13,7 @@ script:
   - mvn dockerfile:push -f engine/pom.xml --quiet
   - mvn dockerfile:push -f worker/pom.xml --quiet
   - mvn dockerfile:push -f search/pom.xml --quiet
+  - bash docker-build.sh
   - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_api -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f api/pom.xml --quiet
   - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_core -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f core/pom.xml --quiet
   - mvn sonar:sonar -Dsonar.projectKey=BenSlabbert_trak_engine -Dsonar.organization=benslabbert-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -f engine/pom.xml --quiet
