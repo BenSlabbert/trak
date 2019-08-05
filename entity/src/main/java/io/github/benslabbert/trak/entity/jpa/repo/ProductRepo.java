@@ -1,9 +1,7 @@
 package io.github.benslabbert.trak.entity.jpa.repo;
 
-import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.Product;
-import io.github.benslabbert.trak.entity.jpa.Seller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,12 +12,11 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepo extends JpaRepository<Product, Long> {
-
-  Page<Product> findAllByBrandEquals(Brand brand, Pageable pageable);
+  Page<Product> findAllByBrandIdEquals(long brandId, Pageable pageable);
 
   Page<Product> findAllByCategoriesEquals(Category category, Pageable pageable);
 
-  Page<Product> findAllBySellerEquals(Seller seller, Pageable pageable);
+  Page<Product> findAllBySellerIdEquals(long sellerId, Pageable pageable);
 
   List<Product> findAllByPlIdIn(List<Long> plIds);
 

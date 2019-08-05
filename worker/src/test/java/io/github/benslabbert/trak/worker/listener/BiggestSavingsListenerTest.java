@@ -7,7 +7,6 @@ import io.github.benslabbert.trak.entity.jpa.service.*;
 import io.github.benslabbert.trak.worker.config.JPATestConfig;
 import io.github.benslabbert.trak.worker.model.ProductSavings;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +38,7 @@ public class BiggestSavingsListenerTest {
 
   @Before
   public void init() {
-
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 10; i++) {
       Product p = productRepo.saveAndFlush(Product.builder().name("p" + i).plId((long) i).build());
       int listedPrice = new Random().nextInt(100);
       int currentPrice = listedPrice - new Random().nextInt(20);
@@ -61,14 +59,12 @@ public class BiggestSavingsListenerTest {
   }
 
   @Test
-  @Ignore("fix me")
   public void test() {
-
     listener.processSavingsEvent("uuid");
 
-    List<ProductSavings> tree =
+    List<ProductSavings> savings =
         (List<ProductSavings>) ReflectionTestUtils.getField(listener, "savings");
 
-    assertNotNull(tree);
+    assertNotNull(savings);
   }
 }

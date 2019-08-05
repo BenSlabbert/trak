@@ -42,7 +42,6 @@ public class ProductServiceImplTest {
 
   @Before
   public void setUp() {
-
     service =
         new ProductServiceImpl(
             repo, new BrandServiceImpl(brandRepo), new SellerServiceImpl(sellerRepo));
@@ -68,9 +67,9 @@ public class ProductServiceImplTest {
 
   @Test
   public void findAllByPLIDsInTest() {
-
     Page<Product> list =
         service.findAllByPLIDsIn(Collections.singletonList(123L), PageRequest.of(0, 10));
+
     assertNotNull(list);
     assertEquals(1, list.getContent().size());
     assertEquals(123L, list.getContent().get(0).getPlId().longValue());
@@ -78,7 +77,6 @@ public class ProductServiceImplTest {
 
   @Test
   public void findByPlIDTest_exists() {
-
     Optional<Product> byPlID = service.findByPlID(123L);
     assertNotNull(byPlID);
     assertTrue(byPlID.isPresent());
@@ -87,7 +85,6 @@ public class ProductServiceImplTest {
 
   @Test
   public void findByPlIDTest_doesNotExist() {
-
     Optional<Product> byPlID = service.findByPlID(1L);
     assertNotNull(byPlID);
     assertFalse(byPlID.isPresent());
@@ -95,7 +92,6 @@ public class ProductServiceImplTest {
 
   @Test
   public void findAllTest_category_PageRequest() {
-
     Page<Product> all = service.findAll(categoryRepo.findAll().get(0), PageRequest.of(0, 10));
     assertNotNull(all);
     assertEquals(1, all.getContent().size());
@@ -103,7 +99,6 @@ public class ProductServiceImplTest {
 
   @Test
   public void findAllTest_brand_PageRequest() {
-
     Page<Product> all = service.findAll(brandRepo.findAll().get(0), PageRequest.of(0, 10));
     assertNotNull(all);
     assertEquals(1, all.getContent().size());
@@ -111,7 +106,6 @@ public class ProductServiceImplTest {
 
   @Test
   public void findAllTest_PageRequest() {
-
     Page<Product> all = service.findAll(PageRequest.of(0, 10));
     assertNotNull(all);
     assertEquals(1, all.getContent().size());
@@ -119,7 +113,6 @@ public class ProductServiceImplTest {
 
   @Test
   public void findOneTest_exists() {
-
     Optional<Product> one = service.findOne(repo.findAll().get(0).getId());
     assertNotNull(one);
     assertTrue(one.isPresent());
@@ -128,7 +121,6 @@ public class ProductServiceImplTest {
 
   @Test
   public void findOneTest_doesNotExists() {
-
     Optional<Product> one = service.findOne(repo.findAll().get(0).getId() + 1);
     assertNotNull(one);
     assertFalse(one.isPresent());
@@ -136,8 +128,8 @@ public class ProductServiceImplTest {
 
   @Test
   public void saveTest() {
-
-    Product product = service.save(Product.builder().name("product").build());
+    Product product =
+        service.save(Product.builder().name("product").plId(1L).brandId(1L).sellerId(1L).build());
 
     assertNotNull(product);
     assertEquals("product", product.getName());
@@ -145,16 +137,12 @@ public class ProductServiceImplTest {
 
   @Test
   public void findAll_bySeller() {
-
     Seller seller = sellerRepo.findAll().get(0);
 
     Iterable<Product> all = service.findAll(seller, PageRequest.of(0, 10));
 
     assertNotNull(all);
-
     assertTrue(all.iterator().hasNext());
-
-    //     todo fix
-    //    assertEquals("seller", all.iterator().next().getSellerId());
+    assertNotNull(all.iterator().next().getSellerId());
   }
 }

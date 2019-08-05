@@ -73,7 +73,7 @@ public class ProductServiceImpl extends RetryPersist<Product, Long> implements P
       key = "#brand.id + '-' + #pageable.pageSize + '-' + #pageable.pageNumber",
       unless = "#result == null")
   public Page<Product> findAll(Brand brand, Pageable pageable) {
-    return repo.findAllByBrandEquals(brand, pageable);
+    return repo.findAllByBrandIdEquals(brand.getId(), pageable);
   }
 
   @Override
@@ -91,7 +91,7 @@ public class ProductServiceImpl extends RetryPersist<Product, Long> implements P
       key = "#seller.id + '-' + #pageable.pageSize + '-' + #pageable.pageNumber",
       unless = "#result == null")
   public Page<Product> findAll(Seller seller, Pageable pageable) {
-    return repo.findAllBySellerEquals(seller, pageable);
+    return repo.findAllBySellerIdEquals(seller.getId(), pageable);
   }
 
   @Override
