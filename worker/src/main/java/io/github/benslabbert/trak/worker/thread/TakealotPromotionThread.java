@@ -25,10 +25,10 @@ public class TakealotPromotionThread extends Thread {
 
   private final PromotionEntityService promotionEntityService;
   private final TakealotAPIService takealotAPIService;
+  private final TakealotPromotionsResponse response;
   private final ProductService productService;
   private final SellerService sellerService;
   private final AddProductRPC addProductRPC;
-  private final TakealotPromotionsResponse response;
   private final String requestId;
   private PromotionEntity result;
 
