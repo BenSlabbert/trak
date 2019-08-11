@@ -2,6 +2,7 @@ package io.github.benslabbert.trak.worker.listener;
 
 import io.github.benslabbert.trak.core.model.Promotion;
 import io.github.benslabbert.trak.entity.jpa.Product;
+import io.github.benslabbert.trak.entity.jpa.PromotionEntity;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.jpa.service.PromotionEntityService;
@@ -45,7 +46,7 @@ public class PromotionEventListener {
   private final AddProductRPC addProductRPC;
 
   // todo add Message message to method params to check for redelivery and other headers to avoid
-  // reprocessing enevts
+  // reprocessing events
   @RabbitHandler
   public void receive(PromotionEvent promotionEvent) throws InterruptedException {
     log.info(
@@ -55,56 +56,51 @@ public class PromotionEventListener {
 
     if (promotionEvent.getPromotion().equals(Promotion.DAILY_DEAL)) {
       log.info("{}: Getting Daily Deals", promotionEvent.getRequestId());
-
-      getDailyDeals(promotionEvent.getPromotion());
+      savePromotion(takealotAPIService.getPLIDsOnPromotion(promotionEvent.getPromotion()));
     } else if (promotionEvent.getPromotion().equals(Promotion.ALL)) {
       log.info("{}: Getting All Promotions", promotionEvent.getRequestId());
-
-      Optional<TakealotPromotion> takealotPromotion = takealotAPIService.getTakealotPromotion();
-
-      if (takealotPromotion.isEmpty()) {
-        log.warn("{}: Failed to get promotions", promotionEvent.getRequestId());
-        return;
-      }
-
-      List<TakealotPromotionThread> threads = new ArrayList<>();
-
-      for (TakealotPromotionsResponse r : takealotPromotion.get().getResponseList()) {
-        threads.add(threadFactory.create(r, promotionEvent.getRequestId()));
-      }
-
-      for (Thread thread : threads) {
-        log.info("{}: Starting promotion thread", promotionEvent.getRequestId());
-        thread.start();
-      }
-
-      log.info("{}: Waiting for all worker threads to finish", promotionEvent.getRequestId());
-
-      for (Thread thread : threads) {
-        thread.join();
-      }
-
-      for (TakealotPromotionThread thread : threads) {
-        if (thread.getResult() != null) {
-          log.info(
-              "{}: Created promotion: {} DB ID: {}",
-              promotionEvent.getRequestId(),
-              thread.getResult().getTakealotPromotionId(),
-              thread.getResult().getId());
-        } else {
-          log.warn("{}: Failed to created promotion!", promotionEvent.getRequestId());
-        }
-      }
-
-      log.info("{}: Done!", promotionEvent.getRequestId());
+      getAllPromotions(promotionEvent);
     }
   }
 
-  private void getDailyDeals(Promotion promotion) {
-    savePromotion(takealotAPIService.getPLIDsOnPromotion(promotion));
+  private void getAllPromotions(PromotionEvent promotionEvent) throws InterruptedException {
+    log.info("{}: Getting All Promotions", promotionEvent.getRequestId());
+    Optional<TakealotPromotion> takealotPromotion = takealotAPIService.getTakealotPromotion();
+
+    if (takealotPromotion.isEmpty()) {
+      log.warn("{}: Failed to get promotions", promotionEvent.getRequestId());
+      return;
+    }
+
+    List<TakealotPromotionThread> threads = new ArrayList<>();
+
+    for (TakealotPromotionsResponse r : takealotPromotion.get().getResponseList()) {
+      threads.add(threadFactory.create(r, promotionEvent.getRequestId()));
+    }
+
+    for (Thread t : threads) {
+      log.info("{}: Starting promotion thread", promotionEvent.getRequestId());
+      t.start();
+    }
+
+    log.info("{}: Waiting for all worker threads to finish", promotionEvent.getRequestId());
+    for (Thread t : threads) t.join();
+
+    for (TakealotPromotionThread t : threads) {
+      Optional<PromotionEntity> result = t.getResult();
+      if (result.isPresent()) {
+        log.info(
+            "{}: Created promotion: {} DB ID: {}",
+            promotionEvent.getRequestId(),
+            result.get().getTakealotPromotionId(),
+            result.get().getId());
+      } else {
+        log.warn("{}: Failed to create promotion!", promotionEvent.getRequestId());
+      }
+    }
   }
 
-  // todo: fix duplicate code
+  // todo: fix duplicate code TakealotPromotionThread#savePromotion
   private void savePromotion(PromotionIds onPromotion) {
     if (onPromotion.getPlIDs().isEmpty()) {
       log.info("No plIDs on promotion");
@@ -148,6 +144,7 @@ public class PromotionEventListener {
       }
     }
 
+    log.info("{}: Saving products for promotion", onPromotion.getName());
     promotionEntityService.save(
         onPromotion.getName(), onPromotion.getPromotionId(), onPromotion.getPlIDs());
   }

@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface PromotionEntityService {
   PromotionEntity save(String promotionName, Long promotionId, List<Long> plIds);
 
-  Optional<PromotionEntity> findLatest(String promotionName);
+  Optional<PromotionEntity> findLatestPromotion(String promotionName);
 }

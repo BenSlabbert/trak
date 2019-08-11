@@ -7,7 +7,7 @@ services:
   ######################
 
   engine:
-    image: benjaminslabbert/trak_engine:1.0.3-2019-07-30
+    image: benjaminslabbert/trak_engine:1.0.4-2019-08-05
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -34,7 +34,7 @@ services:
         window: 120s
 
   worker:
-    image: benjaminslabbert/trak_worker:1.0.3-2019-07-30
+    image: benjaminslabbert/trak_worker:1.0.4-2019-08-05
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -61,7 +61,7 @@ services:
         window: 120s
 
   search:
-    image: benjaminslabbert/trak_search:1.0.3-2019-07-30
+    image: benjaminslabbert/trak_search:1.0.4-2019-08-05
     ports:
       - 50052
     environment:
@@ -90,7 +90,7 @@ services:
         window: 120s
 
   api:
-    image: benjaminslabbert/trak_api:1.0.3-2019-07-30
+    image: benjaminslabbert/trak_api:1.0.4-2019-08-05
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -117,15 +117,15 @@ services:
         max_attempts: 3
         window: 120s
 
-  ui:
-    image: benjaminslabbert/trak_ui:1.0.4-1563991595
+  gateway:
+    image: benjaminslabbert/trak_gateway:1.0.1-1565008424
     ports:
-      - 3000:3000
+      - 5000:5000
     depends_on:
       - search
       - api
     labels:
-      - "description=Trak UI, serving ReactJS"
+      - "description=Trak Gateway, serving ReactJS"
     networks:
       - frontend
     stop_grace_period: 1m30s
@@ -281,7 +281,7 @@ services:
         window: 120s
 
   logstash:
-    image: benjaminslabbert/trak_logstash:1.0.2
+    image: benjaminslabbert/trak_logstash:1.0.4-1565000104
     environment:
       - "LS_JAVA_OPTS=-Xms512m -Xmx512m"
     depends_on:
@@ -309,7 +309,7 @@ services:
   ##############
 
   prometheus:
-    image: benjaminslabbert/trak_prometheus:1.0.3-2019-04-28
+    image: benjaminslabbert/trak_prometheus:1.0.4-1565000104
     stop_grace_period: 1m30s
     volumes:
       - prometheus-data:/prometheus

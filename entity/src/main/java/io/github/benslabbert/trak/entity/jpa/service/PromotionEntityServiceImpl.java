@@ -5,6 +5,7 @@ import io.github.benslabbert.trak.entity.jpa.PromotionEntity;
 import io.github.benslabbert.trak.entity.jpa.repo.PromotionEntityRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +39,7 @@ public class PromotionEntityServiceImpl implements PromotionEntityService {
   }
 
   @Override
-  public Optional<PromotionEntity> findLatest(String promotionName) {
-    return repo.findTopByNameEquals(promotionName);
+  public Optional<PromotionEntity> findLatestPromotion(String promotionName) {
+    return repo.findTopByNameEquals(promotionName, Sort.by(Sort.Direction.DESC, "id"));
   }
 }

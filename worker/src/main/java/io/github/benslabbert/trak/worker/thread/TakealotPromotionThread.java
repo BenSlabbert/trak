@@ -13,7 +13,6 @@ import io.github.benslabbert.trak.worker.rpc.AddProductRPC;
 import io.github.benslabbert.trak.worker.service.TakealotAPIService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.Nullable;
 
 import java.net.URI;
 import java.util.List;
@@ -42,21 +41,20 @@ public class TakealotPromotionThread extends Thread {
     savePromotion(takealotAPIService.getPLIDsOnPromotion(displayName));
   }
 
-  @Nullable
-  public PromotionEntity getResult() {
-    return result;
+  public Optional<PromotionEntity> getResult() {
+    return Optional.ofNullable(result);
   }
 
   private void savePromotion(PromotionIds onPromotion) {
     if (onPromotion.getPlIDs().isEmpty()) {
-      log.info("No plIDs on promotion");
+      log.info("{}: No plIDs on promotion", onPromotion.getName());
       return;
     }
 
     List<Product> products = productService.findAllByPLIDsIn(onPromotion.getPlIDs());
 
     if (products.size() != onPromotion.getPlIDs().size()) {
-      log.warn("Not all Daily Deal items are in db, add one by one ...");
+      log.warn("{}: Not all items are in db, add one by one ...", onPromotion.getName());
       Optional<Seller> seller = sellerService.findByNameEquals("Takealot");
 
       if (seller.isEmpty()) {
@@ -76,7 +74,7 @@ public class TakealotPromotionThread extends Thread {
                         URI.create(getApiUrl(plId)), seller.get(), plId)));
 
         if (productId.isEmpty()) {
-          log.warn("Failed to add product for plId: {}", plId);
+          log.warn("{}: Failed to add product for plId: {}", onPromotion.getName(), plId);
           continue;
         }
 
@@ -85,10 +83,12 @@ public class TakealotPromotionThread extends Thread {
         if (p.isPresent()) {
           products.add(p.get());
         } else {
-          log.warn("N0 product for id: {}", productId);
+          log.warn("{}: N product for id: {}", onPromotion.getName(), productId);
         }
       }
     }
+
+    log.info("{}: Saving products for promotion", onPromotion.getName());
 
     result =
         promotionEntityService.save(
