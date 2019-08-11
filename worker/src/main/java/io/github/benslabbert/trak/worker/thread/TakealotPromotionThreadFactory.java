@@ -22,18 +22,18 @@ public class TakealotPromotionThreadFactory {
   private final AddProductRPC addProductRPC;
 
   public TakealotPromotionThread create(TakealotPromotionsResponse response, String requestId) {
-    TakealotPromotionThread thread =
+    TakealotPromotionThread t =
         new TakealotPromotionThread(
             promotionEntityService,
             takealotAPIService,
+            response,
             productService,
             sellerService,
             addProductRPC,
-            response,
             requestId);
 
-    thread.setName(requestId);
+    t.setName(requestId);
 
-    return thread;
+    return t;
   }
 }
