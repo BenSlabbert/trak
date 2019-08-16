@@ -37,7 +37,6 @@ public class TakealotPromotionThread extends Thread {
     String displayName = response.getDisplayName();
     Long promotionId = response.getPromotionId();
     log.info("{}: Found promotion: {} with ID: {}", requestId, displayName, promotionId);
-
     savePromotion(takealotAPIService.getPLIDsOnPromotion(displayName));
   }
 
@@ -47,18 +46,19 @@ public class TakealotPromotionThread extends Thread {
 
   private void savePromotion(PromotionIds onPromotion) {
     if (onPromotion.getPlIDs().isEmpty()) {
-      log.info("{}: No plIDs on promotion", onPromotion.getName());
+      log.info("{}::{} No plIDs on promotion", requestId, onPromotion.getName());
       return;
     }
 
     List<Product> products = productService.findAllByPLIDsIn(onPromotion.getPlIDs());
 
     if (products.size() != onPromotion.getPlIDs().size()) {
-      log.warn("{}: Not all items are in db, add one by one ...", onPromotion.getName());
+      log.warn(
+          "{}::{} Not all items are in db, add one by one ...", requestId, onPromotion.getName());
       Optional<Seller> seller = sellerService.findByNameEquals("Takealot");
 
       if (seller.isEmpty()) {
-        log.warn("Failed to find Takealot seller!");
+        log.warn("{}: Failed to find Takealot seller!", requestId);
         return;
       }
 
@@ -74,7 +74,8 @@ public class TakealotPromotionThread extends Thread {
                         URI.create(getApiUrl(plId)), seller.get(), plId)));
 
         if (productId.isEmpty()) {
-          log.warn("{}: Failed to add product for plId: {}", onPromotion.getName(), plId);
+          log.warn(
+              "{}::{} Failed to add product for plId: {}", requestId, onPromotion.getName(), plId);
           continue;
         }
 
@@ -83,12 +84,12 @@ public class TakealotPromotionThread extends Thread {
         if (p.isPresent()) {
           products.add(p.get());
         } else {
-          log.warn("{}: N product for id: {}", onPromotion.getName(), productId);
+          log.warn("{}::{} No product for id: {}", requestId, onPromotion.getName(), productId);
         }
       }
     }
 
-    log.info("{}: Saving products for promotion", onPromotion.getName());
+    log.info("{}::{} Saving products for promotion", requestId, onPromotion.getName());
 
     result =
         promotionEntityService.save(

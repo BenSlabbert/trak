@@ -49,16 +49,15 @@ public class PromotionEventListener {
   // reprocessing events
   @RabbitHandler
   public void receive(PromotionEvent promotionEvent) throws InterruptedException {
-    log.info(
-        "{}: Got promotion event for: {}",
-        promotionEvent.getRequestId(),
-        promotionEvent.getPromotion());
+    String reqId = promotionEvent.getRequestId();
+    Promotion p = promotionEvent.getPromotion();
+    log.info("{}: Got promotion event for: {}", reqId, p);
 
-    if (promotionEvent.getPromotion().equals(Promotion.DAILY_DEAL)) {
-      log.info("{}: Getting Daily Deals", promotionEvent.getRequestId());
-      savePromotion(takealotAPIService.getPLIDsOnPromotion(promotionEvent.getPromotion()));
-    } else if (promotionEvent.getPromotion().equals(Promotion.ALL)) {
-      log.info("{}: Getting All Promotions", promotionEvent.getRequestId());
+    if (p.equals(Promotion.DAILY_DEAL)) {
+      log.info("{}: Getting Daily Deals", reqId);
+      savePromotion(takealotAPIService.getPLIDsOnPromotion(p));
+    } else if (p.equals(Promotion.ALL)) {
+      log.info("{}: Getting All Promotions", reqId);
       getAllPromotions(promotionEvent);
     }
   }
