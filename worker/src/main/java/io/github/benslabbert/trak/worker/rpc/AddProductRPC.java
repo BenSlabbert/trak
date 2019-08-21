@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -32,6 +33,7 @@ public class AddProductRPC extends ProductRequest {
   private final BrandService brandService;
   private final PriceService priceService;
 
+  @Async
   @Nullable
   @RabbitListener(queues = ADD_PRODUCT_RPC_QUEUE)
   public Long addProduct(AddProductRPCRequest addProductRPCRequest) {

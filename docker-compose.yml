@@ -5,7 +5,7 @@ services:
   rabbit:
     image: rabbitmq:3.7.14-management-alpine
     hostname: rabbit
-    restart: always
+    restart: on-failure
     mem_limit: 600m
     environment:
       - RABBITMQ_DEFAULT_USER=trak
@@ -19,7 +19,7 @@ services:
 
   redis:
     image: redis:5.0.4-alpine
-    restart: always
+    restart: on-failure
     ports:
       - 6379:6379
     mem_limit: 600m
@@ -28,7 +28,7 @@ services:
 
   rds:
     image: mariadb:10.3.14
-    restart: always
+    restart: on-failure
     ports:
       - 3306:3306
     volumes:
@@ -43,7 +43,7 @@ services:
   engine:
     build: engine/
     image: benjaminslabbert/trak_engine:1.0.2
-    restart: always
+    restart: on-failure
     mem_limit: 600m
     environment:
       - SPRING_DATASOURCE_USERNAME=user
@@ -55,7 +55,7 @@ services:
   worker:
     build: worker/
     image: benjaminslabbert/trak_worker:1.0.2
-    restart: always
+    restart: on-failure
     mem_limit: 600m
     environment:
       - SPRING_DATASOURCE_USERNAME=user
@@ -68,7 +68,7 @@ services:
   search:
     build: search/
     image: benjaminslabbert/trak_search:1.0.2
-    restart: always
+    restart: on-failure
     mem_limit: 250m
     ports:
       - 8081:8081
@@ -84,7 +84,7 @@ services:
   api:
     build: api/
     image: benjaminslabbert/trak_api:1.0.2
-    restart: always
+    restart: on-failure
     mem_limit: 250m
     ports:
       - 8082:8082
@@ -130,7 +130,7 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:6.4.1
-    restart: always
+    restart: on-failure
     ports:
       - 5601:5601
     volumes:
@@ -146,7 +146,7 @@ services:
     image: benjaminslabbert/trak_logstash:1.0.2
     ports:
       - 9600:9600
-    restart: always
+    restart: on-failure
     depends_on:
       - es
 

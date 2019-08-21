@@ -1,5 +1,6 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.PromotionEntity;
 import io.github.benslabbert.trak.entity.jpa.repo.PromotionEntityRepo;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 
 @Slf4j
 @Service
@@ -20,6 +22,7 @@ public class PromotionEntityServiceImpl implements PromotionEntityService {
 
   private final PromotionEntityRepo repo;
   private final ProductService productService;
+  private final DistributedLockRegistry lockRegistry;
 
   @Override
   public PromotionEntity save(String promotionName, Long promotionId, List<Long> plIds) {
@@ -27,12 +30,21 @@ public class PromotionEntityServiceImpl implements PromotionEntityService {
     Optional<PromotionEntity> p = repo.findByTakealotPromotionIdEquals(promotionId);
 
     if (p.isEmpty()) {
-      return repo.saveAndFlush(
-          PromotionEntity.builder()
-              .name(promotionName)
-              .takealotPromotionId(promotionId)
-              .products(products)
-              .build());
+      String lockKey = "promotion-" + promotionId;
+      Lock lock = lockRegistry.obtain(lockKey);
+      log.debug("Obtaining lock: {}", lockKey);
+      lock.lock();
+
+      PromotionEntity pe =
+          repo.saveAndFlush(
+              PromotionEntity.builder()
+                  .name(promotionName)
+                  .takealotPromotionId(promotionId)
+                  .products(products)
+                  .build());
+      log.debug("Releasing lock: {}", lockKey);
+      lock.unlock();
+      return pe;
     }
 
     return p.get();

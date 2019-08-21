@@ -13,6 +13,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class PriceCleanupEventListener extends PageOverContent<Price> {
   private final ProductService productService;
   private final PriceService priceService;
 
+  @Async
   @RabbitHandler
   public void receive(PriceCleanUpEvent event) {
     long start = System.currentTimeMillis();

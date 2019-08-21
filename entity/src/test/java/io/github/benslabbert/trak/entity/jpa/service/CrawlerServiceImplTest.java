@@ -1,22 +1,28 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
-import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
-import static org.junit.Assert.*;
-
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.config.JPATestConfig;
 import io.github.benslabbert.trak.entity.jpa.Crawler;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.repo.CrawlerRepo;
 import io.github.benslabbert.trak.entity.jpa.repo.SellerRepo;
-import java.util.Optional;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
+
+import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
+import static org.junit.Assert.*;
 
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -27,21 +33,29 @@ public class CrawlerServiceImplTest {
   @Autowired private CrawlerRepo crawlerRepo;
   @Autowired private SellerRepo sellerRepo;
 
+  @Mock private DistributedLockRegistry redisLockRegistry;
+
   // todo test OptimisticLockException
   private CrawlerService service;
+  private ReentrantLock reentrantLock = new ReentrantLock();
 
   @Before
   public void setUp() {
+    Mockito.when(redisLockRegistry.obtain(Mockito.anyString())).thenReturn(reentrantLock);
 
-    service = new CrawlerServiceImpl(crawlerRepo);
+    service = new CrawlerServiceImpl(crawlerRepo, redisLockRegistry);
 
     Seller seller = sellerRepo.saveAndFlush(Seller.builder().name("seller").build());
     crawlerRepo.saveAndFlush(Crawler.builder().lastId(1L).seller(seller).build());
   }
 
+  @After
+  public void after() {
+    assertFalse(reentrantLock.isLocked());
+  }
+
   @Test
   public void saveTest() {
-
     Crawler crawler = crawlerRepo.findAll().get(0);
 
     assertNotNull(crawler);
@@ -57,7 +71,6 @@ public class CrawlerServiceImplTest {
 
   @Test
   public void findBySellerTest() {
-
     Seller seller = sellerRepo.findAll().get(0);
 
     Optional<Crawler> crawler = service.findBySeller(seller);

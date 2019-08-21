@@ -1,5 +1,6 @@
 package io.github.benslabbert.trak.worker.listener;
 
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.repo.*;
@@ -9,6 +10,7 @@ import io.github.benslabbert.trak.worker.model.ProductSavings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,6 +36,8 @@ public class BiggestSavingsListenerTest {
   @Autowired private BrandRepo brandRepo;
   @Autowired private PriceRepo priceRepo;
 
+  @Mock private DistributedLockRegistry lockRegistry;
+
   private BiggestSavingsListener listener;
 
   @Before
@@ -54,8 +58,11 @@ public class BiggestSavingsListenerTest {
         new BiggestSavingsListener(
             new BestSavingsServiceImpl(bestSavingsRepo),
             new ProductServiceImpl(
-                productRepo, new BrandServiceImpl(brandRepo), new SellerServiceImpl(sellerRepo)),
-            new PriceServiceImpl(priceRepo));
+                productRepo,
+                new BrandServiceImpl(brandRepo, lockRegistry),
+                new SellerServiceImpl(sellerRepo, lockRegistry),
+                lockRegistry),
+            new PriceServiceImpl(priceRepo, lockRegistry));
   }
 
   @Test

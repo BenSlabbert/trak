@@ -1,5 +1,6 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.config.JPATestConfig;
 import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.Category;
@@ -13,6 +14,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
 import static org.junit.Assert.*;
@@ -38,13 +42,20 @@ public class ProductServiceImplTest {
   @Autowired private BrandRepo brandRepo;
   @Autowired private ProductRepo repo;
 
+  @Mock private DistributedLockRegistry redisLockRegistry;
+
   private ProductService service;
+  private ReentrantLock reentrantLock = new ReentrantLock();
 
   @Before
   public void setUp() {
+    Mockito.when(redisLockRegistry.obtain(Mockito.anyString())).thenReturn(reentrantLock);
     service =
         new ProductServiceImpl(
-            repo, new BrandServiceImpl(brandRepo), new SellerServiceImpl(sellerRepo));
+            repo,
+            new BrandServiceImpl(brandRepo, redisLockRegistry),
+            new SellerServiceImpl(sellerRepo, redisLockRegistry),
+            redisLockRegistry);
 
     Seller seller = sellerRepo.saveAndFlush(Seller.builder().name("seller").build());
     Brand brand = brandRepo.saveAndFlush(Brand.builder().name("brand").build());
@@ -63,6 +74,7 @@ public class ProductServiceImplTest {
   @After
   public void after() {
     repo.deleteAll();
+    assertFalse(reentrantLock.isLocked());
   }
 
   @Test

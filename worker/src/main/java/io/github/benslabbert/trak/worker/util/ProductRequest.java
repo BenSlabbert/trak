@@ -36,7 +36,7 @@ public abstract class ProductRequest {
           e.getRawStatusCode());
       return Optional.empty();
     } catch (ResourceAccessException e) {
-      log.warn("Failed to Access API: " + url + " with exception:\n", e);
+      log.warn("ResourceAccessException: Failed to Access API: " + url);
       return Optional.empty();
     } catch (Exception e) {
       log.warn("Failed to deserialize api response: " + url, e);

@@ -1,10 +1,8 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
-import static io.github.benslabbert.trak.core.cache.CacheNames.SELLER_CACHE;
-
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.repo.SellerRepo;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -14,6 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+
+import static io.github.benslabbert.trak.core.cache.CacheNames.SELLER_CACHE;
+
 @Slf4j
 @Service
 @Transactional
@@ -21,11 +24,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerServiceImpl extends RetryPersist<Seller, Long> implements SellerService {
 
   private final SellerRepo repo;
+  private final DistributedLockRegistry lockRegistry;
 
   @Override
   @CacheEvict(value = SELLER_CACHE, allEntries = true)
   public Seller save(Seller seller) {
-    return retry(seller, repo);
+    String lockKey = "seller-" + seller.getName();
+    Lock lock = lockRegistry.obtain(lockKey);
+    log.debug("Obtaining lock: {}", lockKey);
+    lock.lock();
+    Seller s = retry(seller, repo);
+    log.debug("Releasing lock: {}", lockKey);
+    lock.unlock();
+    return s;
   }
 
   @Override

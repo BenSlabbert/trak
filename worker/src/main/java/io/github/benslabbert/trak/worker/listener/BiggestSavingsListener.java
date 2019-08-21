@@ -14,6 +14,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class BiggestSavingsListener extends PageOverAll<Product> {
 
   private final List<ProductSavings> savings = new ArrayList<>();
 
+  @Async
   @RabbitHandler
   public void processSavingsEvent(String uuid) {
     log.info("{}: Processing biggest savings event", uuid);

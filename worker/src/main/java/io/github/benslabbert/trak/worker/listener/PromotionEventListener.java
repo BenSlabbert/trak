@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -47,6 +48,7 @@ public class PromotionEventListener {
 
   // todo add Message message to method params to check for redelivery and other headers to avoid
   // reprocessing events
+  @Async
   @RabbitHandler
   public void receive(PromotionEvent promotionEvent) throws InterruptedException {
     String reqId = promotionEvent.getRequestId();

@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.IOException;
@@ -21,16 +22,30 @@ import java.util.Map;
 @EnableTransactionManagement
 public class ApiApplication {
 
+  private static ThreadPoolTaskExecutor executor;
   private static Server server;
 
   public static void main(String[] args) {
     try {
+      executor = setUpExecutor();
       ConfigurableApplicationContext context = SpringApplication.run(ApiApplication.class, args);
       startGRPCServer(context);
       log.info("Api initialized!");
     } catch (Exception e) {
       log.error("Failed to run application!", e);
     }
+  }
+
+  private static ThreadPoolTaskExecutor setUpExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+    executor.setCorePoolSize(2);
+    executor.setMaxPoolSize(4);
+    executor.setQueueCapacity(Integer.MAX_VALUE);
+    executor.setThreadNamePrefix("TRAK-API-");
+    executor.initialize();
+
+    return executor;
   }
 
   private static void startGRPCServer(ApplicationContext context)
@@ -48,7 +63,7 @@ public class ApiApplication {
     }
 
     log.info("Starting gRPC server");
-
+    serverBuilder.executor(executor);
     server = serverBuilder.build().start();
     server.awaitTermination();
     addShutdownHook();
@@ -67,8 +82,7 @@ public class ApiApplication {
   }
 
   private static void stop() {
-    if (server != null) {
-      server.shutdown();
-    }
+    if (server != null) server.shutdown();
+    if (executor != null) executor.shutdown();
   }
 }

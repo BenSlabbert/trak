@@ -36,9 +36,9 @@ public class EngineApplication {
   public ThreadPoolTaskExecutor executor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-    executor.setCorePoolSize(4);
-    executor.setMaxPoolSize(10);
-    executor.setQueueCapacity(10);
+    executor.setCorePoolSize(2);
+    executor.setMaxPoolSize(4);
+    executor.setQueueCapacity(Integer.MAX_VALUE);
     executor.setThreadNamePrefix("TRAK-ENGINE-");
     executor.initialize();
 

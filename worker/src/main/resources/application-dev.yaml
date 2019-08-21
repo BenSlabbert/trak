@@ -16,11 +16,16 @@ spring:
     listener:
       simple:
         concurrency: 2
-        max-concurrency: 2
+        max-concurrency: 4
+        retry:
+          max-attempts: 3
+          enabled: true
+          max-interval: 10000ms
   redis:
     host: localhost
     port: 6379
     ssl: false
+    password: password
   datasource:
     url: jdbc:mysql://localhost/trak
     username: user

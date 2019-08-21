@@ -15,7 +15,7 @@ services:
     image: portainer/portainer:1.20.2
     ports:
       - 9000:9000
-    restart: always
+    restart: on-failure
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -24,7 +24,7 @@ services:
   rabbit:
     image: rabbitmq:3.7.14-management-alpine
     hostname: rabbit
-    restart: always
+    restart: on-failure
     environment:
       - RABBITMQ_DEFAULT_USER=trak
       - RABBITMQ_DEFAULT_PASS=password
@@ -37,7 +37,8 @@ services:
 
   redis:
     image: redis:5.0.4-alpine
-    restart: always
+    command: redis-server --requirepass password
+    restart: on-failure
     ports:
       - 6379:6379
     volumes:
@@ -45,7 +46,7 @@ services:
 
   rds:
     image: mariadb:10.3.14
-    restart: always
+    restart: on-failure
     ports:
       - 3306:3306
     volumes:
@@ -58,7 +59,7 @@ services:
 
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-    restart: always
+    restart: on-failure
     ports:
       - 9200:9200
       - 9300:9300
@@ -71,7 +72,7 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:6.4.1
-    restart: always
+    restart: on-failure
     ports:
       - 5601:5601
     volumes:
@@ -87,7 +88,7 @@ services:
     image: benjaminslabbert/trak_logstash:1.0.2
     ports:
       - 9600:9600
-    restart: always
+    restart: on-failure
     environment:
       - "LS_JAVA_OPTS=-Xms512m -Xmx512m"
     depends_on:

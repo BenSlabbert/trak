@@ -1,20 +1,25 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
-import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.config.JPATestConfig;
 import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.repo.BrandRepo;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.locks.ReentrantLock;
+
+import static io.github.benslabbert.trak.entity.config.Profiles.JPA_TEST_POFILE;
+import static org.junit.Assert.*;
 
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -23,16 +28,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class BrandServiceImplTest {
 
   @Autowired private BrandRepo repo;
+
+  @Mock private DistributedLockRegistry redisLockRegistry;
+
   private BrandService service;
+  private ReentrantLock reentrantLock = new ReentrantLock();
 
   @Before
   public void setUp() {
-    service = new BrandServiceImpl(repo);
+    Mockito.when(redisLockRegistry.obtain(Mockito.anyString())).thenReturn(reentrantLock);
+    service = new BrandServiceImpl(repo, redisLockRegistry);
+  }
+
+  @After
+  public void after() {
+    assertFalse(reentrantLock.isLocked());
   }
 
   @Test
   public void saveTest() {
-
     Brand brand = service.save(Brand.builder().name("brand").build());
 
     assertNotNull(brand);
@@ -41,7 +55,6 @@ public class BrandServiceImplTest {
 
   @Test
   public void findByNameEqualsTest_nullName() {
-
     Brand brand = service.findByNameEquals(null);
 
     assertNotNull(brand);
@@ -50,7 +63,6 @@ public class BrandServiceImplTest {
 
   @Test
   public void findByNameEqualsTest_notFound() {
-
     Brand brand = service.findByNameEquals("new brand");
 
     assertNotNull(brand);
@@ -59,7 +71,6 @@ public class BrandServiceImplTest {
 
   @Test
   public void findByNameEqualsTest_found() {
-
     repo.saveAndFlush(Brand.builder().name("brand").build());
 
     Brand brand = service.findByNameEquals(" brand ");

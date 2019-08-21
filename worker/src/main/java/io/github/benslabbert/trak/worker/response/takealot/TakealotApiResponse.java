@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.benslabbert.trak.worker.response.ProductResponse;
-import java.util.Collections;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Data
@@ -42,7 +43,7 @@ public class TakealotApiResponse implements ProductResponse {
     List<Long> prices = buyBox.getPrices();
 
     if (prices.isEmpty()) {
-      log.error("No prices specified!");
+      log.error("No prices found in by box!");
       return 0L;
     }
 

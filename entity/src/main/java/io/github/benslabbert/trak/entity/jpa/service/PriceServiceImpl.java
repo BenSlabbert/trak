@@ -1,12 +1,8 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
-import static io.github.benslabbert.trak.core.cache.CacheNames.PRICE_CACHE;
-
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.jpa.Price;
 import io.github.benslabbert.trak.entity.jpa.repo.PriceRepo;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -16,6 +12,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+
+import static io.github.benslabbert.trak.core.cache.CacheNames.PRICE_CACHE;
+
 @Slf4j
 @Service
 @Transactional
@@ -23,11 +26,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class PriceServiceImpl extends RetryPersist<Price, Long> implements PriceService {
 
   private final PriceRepo repo;
+  private final DistributedLockRegistry lockRegistry;
 
   @Override
   @CacheEvict(value = PRICE_CACHE, allEntries = true)
   public Price save(Price price) {
-    return retry(price, 1, repo);
+    String lockKey = "price-" + price.getProductId();
+    Lock lock = lockRegistry.obtain(lockKey);
+    log.debug("Obtaining lock: {}", lockKey);
+    lock.lock();
+    Price p = retry(price, 1, repo);
+    log.debug("Releasing lock: {}", lockKey);
+    lock.unlock();
+    return p;
   }
 
   @Override
@@ -56,7 +67,6 @@ public class PriceServiceImpl extends RetryPersist<Price, Long> implements Price
 
   @Override
   public void delete(long id) {
-
     if (repo.existsById(id)) repo.deleteById(id);
     else log.warn("No ID for price: {}", id);
   }

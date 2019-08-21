@@ -1,5 +1,6 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.jpa.Brand;
 import io.github.benslabbert.trak.entity.jpa.repo.BrandRepo;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.OptimisticLockException;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 
 import static io.github.benslabbert.trak.core.cache.CacheNames.BRAND_CACHE;
 
@@ -21,6 +23,7 @@ import static io.github.benslabbert.trak.core.cache.CacheNames.BRAND_CACHE;
 public class BrandServiceImpl extends RetryPersist<Brand, Long> implements BrandService {
 
   private final BrandRepo repo;
+  private final DistributedLockRegistry lockRegistry;
 
   @Override
   @CacheEvict(value = BRAND_CACHE, allEntries = true)
@@ -33,7 +36,14 @@ public class BrandServiceImpl extends RetryPersist<Brand, Long> implements Brand
       brand.setName("Unknown".toUpperCase());
     }
 
+    String lockKey = "brand-" + brand.getName();
+    Lock lock = lockRegistry.obtain(lockKey);
+    log.debug("Obtaining lock: {}", lockKey);
+    lock.lock();
     Brand b = retry(brand, repo);
+    log.debug("Releasing lock: {}", lockKey);
+    lock.unlock();
+
     log.info("Created brand: {}", b);
     return b;
   }
