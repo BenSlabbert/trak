@@ -19,7 +19,7 @@ public class LockRegistryConfig implements DistributedLockRegistry {
   public LockRegistryConfig(RedisConnectionFactory redisConnectionFactory) {
     this.registry =
         new RedisLockRegistry(
-            redisConnectionFactory, REGISTRY_KEY, Duration.ofSeconds(100).toMillis());
+            redisConnectionFactory, REGISTRY_KEY, Duration.ofSeconds(500).toMillis());
   }
 
   @Override

@@ -10,6 +10,7 @@ import io.github.benslabbert.trak.search.es.service.ESBrandService;
 import io.github.benslabbert.trak.search.es.service.ESCategoryService;
 import io.github.benslabbert.trak.search.es.service.ESProductService;
 import io.grpc.Context;
+import io.grpc.Deadline;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +37,13 @@ public class SearchGRPC extends SearchServiceGrpc.SearchServiceImplBase {
     SearchResponse response =
         buildSearchResponse(brandService.findBrandByNameLike(request.getSearch(), pageable));
 
-    if (Context.current().isCancelled()) {
-      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+    Deadline deadline = Context.current().getDeadline();
+    if (deadline != null && deadline.isExpired()) {
+      log.warn("Request took too long to process");
       responseObserver.onCompleted();
+      return;
+    } else if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
       return;
     }
 
@@ -52,9 +57,13 @@ public class SearchGRPC extends SearchServiceGrpc.SearchServiceImplBase {
     SearchResponse response =
         buildSearchResponse(categoryService.findProductByNameLike(request.getSearch(), pageable));
 
-    if (Context.current().isCancelled()) {
-      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+    Deadline deadline = Context.current().getDeadline();
+    if (deadline != null && deadline.isExpired()) {
+      log.warn("Request took too long to process");
       responseObserver.onCompleted();
+      return;
+    } else if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
       return;
     }
 
@@ -68,9 +77,13 @@ public class SearchGRPC extends SearchServiceGrpc.SearchServiceImplBase {
     SearchResponse response =
         buildSearchResponse(productService.findProductByNameLike(request.getSearch(), pageable));
 
-    if (Context.current().isCancelled()) {
-      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+    Deadline deadline = Context.current().getDeadline();
+    if (deadline != null && deadline.isExpired()) {
+      log.warn("Request took too long to process");
       responseObserver.onCompleted();
+      return;
+    } else if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
       return;
     }
 

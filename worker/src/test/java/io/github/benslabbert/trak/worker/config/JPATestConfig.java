@@ -1,9 +1,6 @@
 package io.github.benslabbert.trak.worker.config;
 
-import static io.github.benslabbert.trak.worker.config.Profiles.JPA_TEST_POFILE;
-
-import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
+import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,8 +15,16 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import static io.github.benslabbert.trak.worker.config.Profiles.JPA_TEST_POFILE;
 
 @Configuration
 @EnableTransactionManagement
@@ -71,5 +76,21 @@ public class JPATestConfig {
   @Bean
   public BeanPostProcessor persistenceTranslation() {
     return new PersistenceExceptionTranslationPostProcessor();
+  }
+
+  @Component
+  public static class TestLockRegistryConfig implements DistributedLockRegistry {
+
+    private ReentrantLock reentrantLock = new ReentrantLock();
+
+    @Override
+    public String getRegistryKey() {
+      return "test-registry";
+    }
+
+    @Override
+    public Lock obtain(String lockKey) {
+      return reentrantLock;
+    }
   }
 }

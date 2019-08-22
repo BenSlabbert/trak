@@ -1,6 +1,5 @@
 package io.github.benslabbert.trak.api.grpc.service;
 
-import com.google.common.annotations.Beta;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.github.benslabbert.trak.core.grpc.ClientCancelRequest;
@@ -14,6 +13,7 @@ import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.jpa.service.PromotionEntityService;
 import io.github.benslabbert.trak.grpc.*;
 import io.grpc.Context;
+import io.grpc.Deadline;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -39,35 +39,44 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
   @Override
   public void promotions(
       PromotionRequest request, StreamObserver<PromotionResponse> responseObserver) {
-    PromotionRequest.DealCase dealCase = request.getDealCase();
+    switch (request.getDealCase()) {
+      case DAILY_DEAL:
+        log.info("Daily deal promotion requested");
+        getDailyDeals(request.getPageRequest(), responseObserver);
+        break;
+      case ALL_DEAL:
+        log.info("All Promotions requested");
+        getAllPromotions(responseObserver);
+        break;
+      case DEAL_NOT_SET:
+        log.info("Deal oneof not set");
 
-    if (dealCase.equals(PromotionRequest.DealCase.DAILY_DEAL)) {
-      log.info("Daily deal promotion requested");
-      getDailyDeals(request.getPageRequest(), responseObserver);
-    } else if (dealCase.equals(PromotionRequest.DealCase.SALE_DEAL)) {
-      log.info("Sale promotion requested");
-      getSaleDeals(responseObserver);
-    } else if (dealCase.equals(PromotionRequest.DealCase.DEAL_NOT_SET)) {
-      log.info("Deal oneof not set");
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT.getNumber())
+                .setMessage("Deal oneof must be set")
+                .build();
 
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT.getNumber())
-              .setMessage("Deal oneof must be set")
-              .build();
-
-      responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+        responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+        break;
     }
-
-    responseObserver.onCompleted();
   }
 
-  @Beta
-  private void getSaleDeals(StreamObserver<PromotionResponse> responseObserver) {
+  private void getAllPromotions(StreamObserver<PromotionResponse> responseObserver) {
+    Deadline deadline = Context.current().getDeadline();
+    if (deadline != null && deadline.isExpired()) {
+      log.warn("Request took too long to process");
+      responseObserver.onCompleted();
+      return;
+    } else if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      return;
+    }
+
     Status status =
         Status.newBuilder()
             .setCode(Code.UNIMPLEMENTED.getNumber())
-            .setMessage("Sale Deals not yet implemented")
+            .setMessage("AllPromotions not yet implemented")
             .build();
 
     responseObserver.onError(StatusProto.toStatusRuntimeException(status));
@@ -106,12 +115,17 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
             .setPageResponse(getPageResponse(page))
             .build();
 
-    if (Context.current().isCancelled()) {
+    Deadline deadline = Context.current().getDeadline();
+    if (deadline != null && deadline.isExpired()) {
+      log.warn("Request took too long to process");
+      return;
+    } else if (Context.current().isCancelled()) {
       responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
       return;
     }
 
     responseObserver.onNext(latestResponse);
+    responseObserver.onCompleted();
   }
 
   // todo duplicate in LatestGRPC#getPageResponse

@@ -9,6 +9,7 @@ import io.github.benslabbert.trak.entity.jpa.service.BrandService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.grpc.*;
 import io.grpc.Context;
+import io.grpc.Deadline;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,6 @@ public class BrandGRPC extends BrandServiceGrpc.BrandServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-      responseObserver.onCompleted();
       return;
     }
 
@@ -70,9 +70,13 @@ public class BrandGRPC extends BrandServiceGrpc.BrandServiceImplBase {
               .getProduct());
     }
 
-    if (Context.current().isCancelled()) {
-      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+    Deadline deadline = Context.current().getDeadline();
+    if (deadline != null && deadline.isExpired()) {
+      log.warn("Request took too long to process");
       responseObserver.onCompleted();
+      return;
+    } else if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
       return;
     }
 

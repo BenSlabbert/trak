@@ -14,6 +14,7 @@ import io.github.benslabbert.trak.entity.jpa.service.SellerService;
 import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequestFactory;
 import io.github.benslabbert.trak.grpc.*;
 import io.grpc.Context;
+import io.grpc.Deadline;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-      responseObserver.onCompleted();
       return;
     }
 
@@ -76,7 +76,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-      responseObserver.onCompleted();
       return;
     }
 
@@ -91,7 +90,6 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-      responseObserver.onCompleted();
       return;
     }
 
@@ -108,17 +106,19 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
               .build();
 
       responseObserver.onError(StatusProto.toStatusRuntimeException(status));
-      responseObserver.onCompleted();
       return;
     }
 
-    if (Context.current().isCancelled()) {
+    Deadline deadline = Context.current().getDeadline();
+    if (deadline != null && deadline.isExpired()) {
+      log.warn("Request took too long to process");
+      responseObserver.onCompleted();
+      return;
+    } else if (Context.current().isCancelled()) {
       responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
-      responseObserver.onCompleted();
       return;
     }
 
-    log.info("Got productId: {}", productId);
     responseObserver.onNext(AddProductResponse.newBuilder().setProductId(productId.get()).build());
     responseObserver.onCompleted();
   }
@@ -183,14 +183,17 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
       ProductStatsResponse statsResponse = getProductStatsResponse(request);
       ProductResponse productResponse = getProductResponse(product.get(), statsResponse);
 
-      if (Context.current().isCancelled()) {
-        responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      Deadline deadline = Context.current().getDeadline();
+      if (deadline != null && deadline.isExpired()) {
+        log.warn("Request took too long to process");
         responseObserver.onCompleted();
+        return;
+      } else if (Context.current().isCancelled()) {
+        responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
         return;
       }
 
       responseObserver.onNext(productResponse);
-
     } else {
       Status status =
           Status.newBuilder()

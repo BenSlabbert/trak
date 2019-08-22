@@ -41,27 +41,24 @@ public class ProductGRPCTest {
 
   @Test
   public void badURLTest() {
-
     grpc.addProduct(
         AddProductRequest.newBuilder().setPlId("https://someUrl").build(), responseObserver);
 
     Mockito.verify(responseObserver, Mockito.atLeastOnce()).onError(any());
-    Mockito.verify(responseObserver, Mockito.atLeastOnce()).onCompleted();
+    Mockito.verify(responseObserver, Mockito.never()).onCompleted();
   }
 
   @Test
   public void addProductTest_noRequestPlId() {
-
     grpc.addProduct(AddProductRequest.newBuilder().setPlId("").build(), responseObserver);
 
     Mockito.verify(responseObserver, Mockito.atLeastOnce())
         .onError(any(StatusRuntimeException.class));
-    Mockito.verify(responseObserver, Mockito.atLeastOnce()).onCompleted();
+    Mockito.verify(responseObserver, Mockito.never()).onCompleted();
   }
 
   @Test
   public void goodURLTest_noSellerFound() {
-
     Mockito.when(sellerService.findByNameEquals("Takealot")).thenReturn(Optional.empty());
 
     grpc.addProduct(
@@ -72,16 +69,14 @@ public class ProductGRPCTest {
         responseObserver);
 
     Mockito.verify(responseObserver, Mockito.atLeastOnce()).onError(any());
-    Mockito.verify(responseObserver, Mockito.atLeastOnce()).onCompleted();
+    Mockito.verify(responseObserver, Mockito.never()).onCompleted();
   }
 
   @Test
   public void goodURLTest_sellerFound_productAdded() {
-
     Seller seller = Seller.builder().id(1L).name("Takealot").build();
 
     Mockito.when(sellerService.findByNameEquals("Takealot")).thenReturn(Optional.of(seller));
-
     Mockito.when(addProductRPC.addProduct(any())).thenReturn(Optional.of(123L));
 
     grpc.addProduct(
@@ -99,11 +94,9 @@ public class ProductGRPCTest {
 
   @Test
   public void goodPLIDTest_sellerFound_productAdded() {
-
     Seller seller = Seller.builder().id(1L).name("Takealot").build();
 
     Mockito.when(sellerService.findByNameEquals("Takealot")).thenReturn(Optional.of(seller));
-
     Mockito.when(addProductRPC.addProduct(any())).thenReturn(Optional.of(123L));
 
     grpc.addProduct(
@@ -117,11 +110,9 @@ public class ProductGRPCTest {
 
   @Test
   public void goodURLTest_sellerFound_productNotAdded() {
-
     Seller seller = Seller.builder().id(1L).name("Takealot").build();
 
     Mockito.when(sellerService.findByNameEquals("Takealot")).thenReturn(Optional.of(seller));
-
     Mockito.when(addProductRPC.addProduct(any())).thenReturn(Optional.empty());
 
     grpc.addProduct(
@@ -134,6 +125,6 @@ public class ProductGRPCTest {
     Mockito.verify(responseObserver, Mockito.atLeastOnce()).onError(any());
     Mockito.verify(responseObserver, Mockito.never())
         .onNext(AddProductResponse.newBuilder().setProductId(123L).build());
-    Mockito.verify(responseObserver, Mockito.atLeastOnce()).onCompleted();
+    Mockito.verify(responseObserver, Mockito.never()).onCompleted();
   }
 }

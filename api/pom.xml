@@ -54,7 +54,7 @@
     <dependency>
       <groupId>com.github.BenSlabbert</groupId>
       <artifactId>trak-gRPC</artifactId>
-      <version>19fbdda270</version>
+      <version>ee4710221b302aa4e3a77df5bbe76631434d3750</version>
     </dependency>
 
     <dependency>
@@ -153,6 +153,13 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <version>1.11.3</version>
       <scope>test</scope>
     </dependency>
 
