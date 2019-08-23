@@ -150,6 +150,7 @@ public class PromotionEventListener {
         onPromotion.getName(), onPromotion.getPromotionId(), onPromotion.getPlIDs());
   }
 
+  // todo refactor duplicate TakealotPromotionThread#getProductId
   private Optional<Long> getProductId(Seller seller, Long plId) {
     try {
       CompletableFuture<Long> res =
