@@ -32,10 +32,13 @@ public class CrawlerServiceImpl extends RetryPersist<Crawler, Long> implements C
     Lock lock = lockRegistry.obtain(lockKey);
     log.debug("Obtaining lock: {}", lockKey);
     lock.lock();
-    Crawler c = retry(crawler, 1, repo);
-    log.debug("Releasing lock: {}", lockKey);
-    lock.unlock();
-    return c;
+
+    try {
+      return retry(crawler, 1, repo);
+    } finally {
+      log.debug("Releasing lock: {}", lockKey);
+      lock.unlock();
+    }
   }
 
   @Override

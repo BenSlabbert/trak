@@ -21,6 +21,7 @@ public class TakealotPromotionThreadFactory {
   private final SellerService sellerService;
   private final AddProductRPC addProductRPC;
 
+  // todo refactor this to use CompletableFuture<> and the thread pool
   public TakealotPromotionThread create(TakealotPromotionsResponse response, String requestId) {
     TakealotPromotionThread t =
         new TakealotPromotionThread(

@@ -15,16 +15,25 @@ import java.util.Optional;
 @Slf4j
 public abstract class ProductRequest {
 
-  protected Optional<ProductResponse> getProductResponse(String url) {
+  private Optional<ProductResponse> getProductResponse(String url, int retry) {
+    if (retry > 3) {
+      log.info("Max retries reached!");
+      return Optional.empty();
+    }
+
     try {
       RestTemplate restTemplate = new RestTemplate();
-      // todo this appears to be broken when in the container
-      // javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure
+      // todo
+      //  javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure
+      //  adding this vm arg -Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1 appears to have helped
 
       ResponseEntity<TakealotApiResponse> exchange =
           restTemplate.exchange(URI.create(url), HttpMethod.GET, null, TakealotApiResponse.class);
 
-      if (exchange == null) return Optional.empty();
+      if (exchange == null || exchange.getBody() == null) {
+        log.warn("Failed to get product with URL: {}", url);
+        return Optional.empty();
+      }
 
       return Optional.ofNullable(exchange.getBody());
 
@@ -37,10 +46,14 @@ public abstract class ProductRequest {
       return Optional.empty();
     } catch (ResourceAccessException e) {
       log.warn("ResourceAccessException: Failed to Access API: " + url);
-      return Optional.empty();
+      return getProductResponse(url, ++retry);
     } catch (Exception e) {
       log.warn("Failed to deserialize api response: " + url, e);
       return Optional.empty();
     }
+  }
+
+  protected Optional<ProductResponse> getProductResponse(String url) {
+    return getProductResponse(url, 0);
   }
 }

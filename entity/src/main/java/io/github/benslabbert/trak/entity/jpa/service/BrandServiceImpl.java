@@ -27,7 +27,7 @@ public class BrandServiceImpl extends RetryPersist<Brand, Long> implements Brand
 
   @Override
   @CacheEvict(value = BRAND_CACHE, allEntries = true)
-  public synchronized Brand save(Brand brand) {
+  public Brand save(Brand brand) {
     log.info("Saving brand: {}", brand);
 
     if (brand.getName() != null) {
@@ -36,18 +36,16 @@ public class BrandServiceImpl extends RetryPersist<Brand, Long> implements Brand
       brand.setName("Unknown".toUpperCase());
     }
 
-    String lockKey = "brand-" + brand.getName();
-    Lock lock = lockRegistry.obtain(lockKey);
-    log.debug("Obtaining lock: {}", lockKey);
-    lock.lock();
-    Brand b = retry(brand, repo);
-    log.debug("Releasing lock: {}", lockKey);
-    lock.unlock();
-
-    log.info("Created brand: {}", b);
-    return b;
+    return retry(brand, repo);
   }
 
+  /**
+   * This method does an upsert on the brand name and caches it. We therefore lock on the name when
+   * the method executes (i.e. not cached)
+   *
+   * @param name unique name of the brand
+   * @return Brand
+   */
   @Override
   @Cacheable(
       value = BRAND_CACHE,
@@ -64,18 +62,26 @@ public class BrandServiceImpl extends RetryPersist<Brand, Long> implements Brand
 
     name = name.replaceAll("  ", " ").trim().toUpperCase();
 
-    Optional<Brand> brand = repo.findByNameEquals(name);
-
-    if (brand.isPresent()) {
-      log.info("Found brand with name: {}", name);
-      return brand.get();
-    }
+    String lockKey = "brand-" + name;
+    Lock lock = lockRegistry.obtain(lockKey);
+    log.debug("Obtaining lock: {}", lockKey);
+    lock.lock(); // lock is released in the finally
 
     try {
+      Optional<Brand> brand = repo.findByNameEquals(name);
+
+      if (brand.isPresent()) {
+        log.info("Found brand with name: {}", name);
+        return brand.get();
+      }
+
       log.info("Creating brand with name: {}", name);
       return save(Brand.builder().name(name).build());
     } catch (OptimisticLockException e) {
       return findByNameEquals(name);
+    } finally {
+      log.debug("Releasing lock: {}", lockKey);
+      lock.unlock();
     }
   }
 

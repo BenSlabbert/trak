@@ -27,6 +27,7 @@ public class CacheConfig {
             .entryTtl(Duration.ofMinutes(15))
             .disableCachingNullValues();
 
+    // todo remove duplicate
     Set<String> s = new HashSet<>();
     s.add(CacheNames.PRODUCT_CACHE);
     s.add(CacheNames.PRICE_CACHE);
@@ -36,6 +37,7 @@ public class CacheConfig {
     s.add(CacheNames.BEST_SAVINGS_CACHE);
     s.add(CacheNames.CATEGORY_CACHE);
     s.add(CacheNames.TAKEALOT_PROMOTION_CACHE);
+    s.add(CacheNames.PROMOTION_ENTITY_CACHE);
 
     return RedisCacheManager.builder(connectionFactory)
         .initialCacheNames(s)

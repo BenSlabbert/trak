@@ -20,8 +20,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -37,16 +39,16 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
   private final PriceService priceService;
 
   @Override
-  public void promotions(
+  public void getPromotion(
       PromotionRequest request, StreamObserver<PromotionResponse> responseObserver) {
     switch (request.getDealCase()) {
       case DAILY_DEAL:
         log.info("Daily deal promotion requested");
         getDailyDeals(request.getPageRequest(), responseObserver);
         break;
-      case ALL_DEAL:
-        log.info("All Promotions requested");
-        getAllPromotions(responseObserver);
+      case PROMOTION_ID:
+        log.info("PromotionId: {} requested", request.getPromotionId());
+        getPromotion(request.getPromotionId(), request.getPageRequest(), responseObserver);
         break;
       case DEAL_NOT_SET:
         log.info("Deal oneof not set");
@@ -62,7 +64,55 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
     }
   }
 
-  private void getAllPromotions(StreamObserver<PromotionResponse> responseObserver) {
+  @Override
+  public void getAllPromotions(
+      GetAllPromotionsRequest request, StreamObserver<GetAllPromotionsResponse> responseObserver) {
+    PageRequestMessage pageRequest = request.getPageRequest();
+
+    Page<PromotionEntity> promotions =
+        promotionEntityService.findLatestPromotion(
+            PageRequest.of(
+                pageRequest.getPage(),
+                pageRequest.getPageLen(),
+                Sort.by(Sort.Direction.DESC, "id")));
+
+    Deadline deadline = Context.current().getDeadline();
+    if (deadline != null && deadline.isExpired()) {
+      log.warn("Request took too long to process");
+      responseObserver.onCompleted();
+      return;
+    } else if (Context.current().isCancelled()) {
+      responseObserver.onError(ClientCancelRequest.getClientCancelMessage());
+      return;
+    }
+
+    List<PromotionMessage> messages =
+        promotions.getContent().stream().map(mapPromotions()).collect(Collectors.toList());
+
+    responseObserver.onNext(
+        GetAllPromotionsResponse.newBuilder()
+            .addAllPromotions(messages)
+            .setPageResponse(getPageResponse(promotions))
+            .build());
+    responseObserver.onCompleted();
+  }
+
+  private Function<PromotionEntity, PromotionMessage> mapPromotions() {
+    return p ->
+        PromotionMessage.newBuilder()
+            .setId(p.getId())
+            .setName(p.getName())
+            .setPromotionId(p.getTakealotPromotionId())
+            .setCreated(
+                p.getCreated() != null ? p.getCreated().getTime() : Instant.now().toEpochMilli())
+            .build();
+  }
+
+  private void getPromotion(
+      long promotionId,
+      PageRequestMessage pageRequest,
+      StreamObserver<PromotionResponse> responseObserver) {
+
     Deadline deadline = Context.current().getDeadline();
     if (deadline != null && deadline.isExpired()) {
       log.warn("Request took too long to process");
@@ -129,14 +179,14 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
   }
 
   // todo duplicate in LatestGRPC#getPageResponse
-  private PageResponse getPageResponse(Page<Product> products) {
+  private PageResponse getPageResponse(Page page) {
     return PageResponse.newBuilder()
-        .setCurrentPageNumber(products.getNumber() + 1L)
-        .setIsFirstPage(products.isFirst())
-        .setIsLastPage(products.isLast())
-        .setLastPageNumber(products.getTotalPages())
-        .setTotalItems(products.getTotalElements())
-        .setPageSize(products.getNumberOfElements())
+        .setCurrentPageNumber(page.getNumber() + 1L)
+        .setIsFirstPage(page.isFirst())
+        .setIsLastPage(page.isLast())
+        .setLastPageNumber(page.getTotalPages())
+        .setTotalItems(page.getTotalElements())
+        .setPageSize(page.getNumberOfElements())
         .build();
   }
 

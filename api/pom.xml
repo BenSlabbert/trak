@@ -54,7 +54,7 @@
     <dependency>
       <groupId>com.github.BenSlabbert</groupId>
       <artifactId>trak-gRPC</artifactId>
-      <version>ee4710221b302aa4e3a77df5bbe76631434d3750</version>
+      <version>6e351d1e54c2b38627b9bd527e58cf40cee4d1b3</version>
     </dependency>
 
     <dependency>

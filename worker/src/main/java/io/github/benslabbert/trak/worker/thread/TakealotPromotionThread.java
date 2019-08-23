@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,6 +34,7 @@ public class TakealotPromotionThread extends Thread {
   private final String requestId;
   private PromotionEntity result;
 
+  // todo refactor this to use CompletableFuture<>, @Async and the thread pool
   @Override
   public void run() {
     String displayName = response.getDisplayName();
@@ -67,11 +70,8 @@ public class TakealotPromotionThread extends Thread {
       onPromotion.getPlIDs().removeAll(productPLIds);
 
       for (Long plId : onPromotion.getPlIDs()) {
-        Optional<Long> productId =
-            Optional.ofNullable(
-                addProductRPC.addProduct(
-                    AddProductRPCRequestFactory.create(
-                        URI.create(getApiUrl(plId)), seller.get(), plId)));
+        log.info("{}::{} Finding product with plId: {}", requestId, onPromotion.getName(), plId);
+        Optional<Long> productId = getProductId(seller.get(), plId);
 
         if (productId.isEmpty()) {
           log.warn(
@@ -94,6 +94,24 @@ public class TakealotPromotionThread extends Thread {
     result =
         promotionEntityService.save(
             onPromotion.getName(), onPromotion.getPromotionId(), onPromotion.getPlIDs());
+  }
+
+  // todo refactor duplicate PromotionEventListener#getProductId
+  private Optional<Long> getProductId(Seller seller, Long plId) {
+    try {
+      CompletableFuture<Long> res =
+          addProductRPC.addProductAsync(
+              AddProductRPCRequestFactory.create(URI.create(getApiUrl(plId)), seller, plId));
+
+      if (res == null) return Optional.empty();
+      return Optional.ofNullable(res.get());
+    } catch (ExecutionException e) {
+      log.warn("Execution exception while getting value from addProductAsync for plId: " + plId, e);
+      return Optional.empty();
+    } catch (Exception e) {
+      log.warn("General exception while getting value from addProductAsync for plId: " + plId, e);
+      return Optional.empty();
+    }
   }
 
   private String getApiUrl(long plId) {

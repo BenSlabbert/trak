@@ -14,6 +14,7 @@ public class CacheNames {
   public static final String PRICE_CACHE = "price-cache";
   public static final String SELLER_CACHE = "seller-cache";
   public static final String BEST_SAVINGS_CACHE = "best-savings-cache";
+  public static final String PROMOTION_ENTITY_CACHE = "promotion-entity-cache";
 
   // ############
   // API Cache

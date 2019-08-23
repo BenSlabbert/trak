@@ -40,11 +40,23 @@ public class CategoryServiceImpl extends RetryPersist<Category, Long> implements
   public Category createCategory(String name) {
     name = name.replaceAll("  ", " ").trim().toUpperCase();
 
-    Optional<Category> category = repo.findByNameEquals(name);
+    String lockKey = "category-" + name;
+    Lock lock = lockRegistry.obtain(lockKey);
+    log.debug("Obtaining lock: {}", lockKey);
+    lock.lock();
 
-    if (category.isPresent()) return category.get();
+    try {
+      Optional<Category> category = repo.findByNameEquals(name);
 
-    return save(Category.builder().name(name).build());
+      if (category.isPresent()) {
+        return category.get();
+      }
+
+      return save(Category.builder().name(name).build());
+    } finally {
+      log.debug("Releasing lock: {}", lockKey);
+      lock.unlock();
+    }
   }
 
   @Override
@@ -54,13 +66,6 @@ public class CategoryServiceImpl extends RetryPersist<Category, Long> implements
   }
 
   private Category save(Category category) {
-    String lockKey = "category-" + category.getName();
-    Lock lock = lockRegistry.obtain(lockKey);
-    log.debug("Obtaining lock: {}", lockKey);
-    lock.lock();
-    Category c = retry(category, repo);
-    log.debug("Releasing lock: {}", lockKey);
-    lock.unlock();
-    return c;
+    return retry(category, repo);
   }
 }

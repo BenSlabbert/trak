@@ -35,10 +35,13 @@ public class PriceServiceImpl extends RetryPersist<Price, Long> implements Price
     Lock lock = lockRegistry.obtain(lockKey);
     log.debug("Obtaining lock: {}", lockKey);
     lock.lock();
-    Price p = retry(price, 1, repo);
-    log.debug("Releasing lock: {}", lockKey);
-    lock.unlock();
-    return p;
+
+    try {
+      return retry(price, 1, repo);
+    } finally {
+      log.debug("Releasing lock: {}", lockKey);
+      lock.unlock();
+    }
   }
 
   @Override

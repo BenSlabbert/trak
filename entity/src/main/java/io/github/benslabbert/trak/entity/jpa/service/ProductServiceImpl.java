@@ -42,20 +42,18 @@ public class ProductServiceImpl extends RetryPersist<Product, Long> implements P
         product.getSellerId(),
         product.getPlId());
 
-    Optional<Product> p = repo.findByPlIdEquals(product.getPlId());
-
-    if (p.isPresent()) {
-      return p.get();
-    }
-
     String lockKey = "product-" + product.getPlId();
     Lock lock = lockRegistry.obtain(lockKey);
     log.debug("Obtaining lock: {}", lockKey);
     lock.lock();
-    Product retry = retry(product, 1, repo);
-    log.debug("Releasing lock: {}", lockKey);
-    lock.unlock();
-    return retry;
+
+    try {
+      Optional<Product> p = repo.findByPlIdEquals(product.getPlId());
+      return p.orElseGet(() -> retry(product, 1, repo));
+    } finally {
+      log.debug("Releasing lock: {}", lockKey);
+      lock.unlock();
+    }
   }
 
   @Override

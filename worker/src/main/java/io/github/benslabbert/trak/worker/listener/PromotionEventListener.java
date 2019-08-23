@@ -27,6 +27,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static io.github.benslabbert.trak.core.rabbitmq.Queue.PROMOTIONS_QUEUE;
@@ -47,7 +49,7 @@ public class PromotionEventListener {
   private final AddProductRPC addProductRPC;
 
   // todo add Message message to method params to check for redelivery and other headers to avoid
-  // reprocessing events
+  //  reprocessing events
   @Async
   @RabbitHandler
   public void receive(PromotionEvent promotionEvent) throws InterruptedException {
@@ -84,6 +86,8 @@ public class PromotionEventListener {
       t.start();
     }
 
+    // todo refactor this to use CompletableFuture<> and the thread pool otherwise the thread sits
+    //  here and does nothing
     log.info("{}: Waiting for all worker threads to finish", promotionEvent.getRequestId());
     for (Thread t : threads) t.join();
 
@@ -124,11 +128,7 @@ public class PromotionEventListener {
       onPromotion.getPlIDs().removeAll(productPLIds);
 
       for (Long plId : onPromotion.getPlIDs()) {
-        Optional<Long> productId =
-            Optional.ofNullable(
-                addProductRPC.addProduct(
-                    AddProductRPCRequestFactory.create(
-                        URI.create(getApiUrl(plId)), seller.get(), plId)));
+        Optional<Long> productId = getProductId(seller.get(), plId);
 
         if (productId.isEmpty()) {
           log.warn("Failed to add product for plId: {}", plId);
@@ -148,6 +148,23 @@ public class PromotionEventListener {
     log.info("{}: Saving products for promotion", onPromotion.getName());
     promotionEntityService.save(
         onPromotion.getName(), onPromotion.getPromotionId(), onPromotion.getPlIDs());
+  }
+
+  private Optional<Long> getProductId(Seller seller, Long plId) {
+    try {
+      CompletableFuture<Long> res =
+          addProductRPC.addProductAsync(
+              AddProductRPCRequestFactory.create(URI.create(getApiUrl(plId)), seller, plId));
+
+      if (res == null) return Optional.empty();
+      return Optional.ofNullable(res.get());
+    } catch (ExecutionException e) {
+      log.warn("Execution exception while getting value from addProductAsync for plId: " + plId, e);
+      return Optional.empty();
+    } catch (Exception e) {
+      log.warn("General exception while getting value from addProductAsync for plId: " + plId, e);
+      return Optional.empty();
+    }
   }
 
   private String getApiUrl(long plId) {

@@ -19,6 +19,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static io.github.benslabbert.trak.core.rabbitmq.RPC.ADD_PRODUCT_RPC_QUEUE;
@@ -33,10 +34,18 @@ public class AddProductRPC extends ProductRequest {
   private final BrandService brandService;
   private final PriceService priceService;
 
+  //  public Long addProductSync(AddProductRPCRequest addProductRPCRequest) {
+  //    return addProduct(addProductRPCRequest);
+  //  }
+
   @Async
   @Nullable
   @RabbitListener(queues = ADD_PRODUCT_RPC_QUEUE)
-  public Long addProduct(AddProductRPCRequest addProductRPCRequest) {
+  public CompletableFuture<Long> addProductAsync(AddProductRPCRequest addProductRPCRequest) {
+    return CompletableFuture.completedFuture(addProduct(addProductRPCRequest));
+  }
+
+  private Long addProduct(AddProductRPCRequest addProductRPCRequest) {
     log.info("Adding product: {}", addProductRPCRequest);
 
     Optional<Product> product = productService.findByPlID(addProductRPCRequest.getPlId());

@@ -33,10 +33,13 @@ public class SellerServiceImpl extends RetryPersist<Seller, Long> implements Sel
     Lock lock = lockRegistry.obtain(lockKey);
     log.debug("Obtaining lock: {}", lockKey);
     lock.lock();
-    Seller s = retry(seller, repo);
-    log.debug("Releasing lock: {}", lockKey);
-    lock.unlock();
-    return s;
+
+    try {
+      return retry(seller, repo);
+    } finally {
+      log.debug("Releasing lock: {}", lockKey);
+      lock.unlock();
+    }
   }
 
   @Override
