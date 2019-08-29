@@ -7,7 +7,7 @@ jdk:
   - openjdk11
 
 script:
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Dmaven.test.failure.ignore=false -T 2
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Dmaven.test.failure.ignore=false -T 2 --quiet
   - mvn dockerfile:push -f api/pom.xml --quiet
   - mvn dockerfile:push -f engine/pom.xml --quiet
   - mvn dockerfile:push -f worker/pom.xml --quiet
