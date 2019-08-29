@@ -6,7 +6,7 @@ spring:
   liquibase:
     change-log: classpath:liquibase.sql
   jpa:
-    show-sql: true
+    show-sql: false
   rabbitmq:
     username: ${RABBIT_MQ_USERNAME:trak}
     password: ${RABBIT_MQ_PASSWORD:password}
