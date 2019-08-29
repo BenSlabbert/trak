@@ -136,7 +136,7 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
       PageRequestMessage pageRequest, StreamObserver<PromotionResponse> responseObserver) {
 
     Optional<PromotionEntity> latest =
-        promotionEntityService.findLatestPromotion(Promotion.DAILY_DEAL.getName());
+        promotionEntityService.findLatestPromotion(Promotion.DAILY_DEAL);
 
     if (latest.isEmpty()) {
       log.warn("No daily deals available");

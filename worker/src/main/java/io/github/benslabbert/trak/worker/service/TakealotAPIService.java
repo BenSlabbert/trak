@@ -1,6 +1,5 @@
 package io.github.benslabbert.trak.worker.service;
 
-import io.github.benslabbert.trak.core.model.Promotion;
 import io.github.benslabbert.trak.worker.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,7 @@ public class TakealotAPIService {
 
   private Optional<Long> getPromotionId(String promotionName) {
 
-    Optional<TakealotPromotion> p = getTakealotPromotion();
+    Optional<TakealotPromotion> p = getTakealotPromotions();
 
     if (p.isEmpty()) return Optional.empty();
 
@@ -32,7 +31,7 @@ public class TakealotAPIService {
         .findFirst();
   }
 
-  public Optional<TakealotPromotion> getTakealotPromotion() {
+  public Optional<TakealotPromotion> getTakealotPromotions() {
     ResponseEntity<TakealotPromotion> resp =
         restTemplate.exchange(
             URI.create("https://api.takealot.com/rest/v-1-8-0/promotions?is_bundle_included=True"),
@@ -41,7 +40,7 @@ public class TakealotAPIService {
             TakealotPromotion.class);
 
     if (!resp.getStatusCode().is2xxSuccessful()) {
-      log.warn("Failed to get Daily Deal promotionId");
+      log.warn("Failed to get promotionId");
       return Optional.empty();
     }
 
@@ -90,26 +89,11 @@ public class TakealotAPIService {
     return ids;
   }
 
-  public PromotionIds getPLIDsOnPromotion(Promotion promotion) {
-    Optional<Long> promotionId = getPromotionId(promotion.getName());
-
-    if (promotionId.isEmpty()) {
-      log.warn("No Daily Deals available");
-      return PromotionIds.builder().plIDs(Collections.emptyList()).build();
-    }
-
-    return PromotionIds.builder()
-        .name(promotion.getName())
-        .promotionId(promotionId.get())
-        .plIDs(getPLIDsOnPromotion(promotionId.get()))
-        .build();
-  }
-
   public PromotionIds getPLIDsOnPromotion(String promotionName) {
     Optional<Long> promotionId = getPromotionId(promotionName);
 
     if (promotionId.isEmpty()) {
-      log.warn("No Daily Deals available");
+      log.warn("No Deals available");
       return PromotionIds.builder().plIDs(Collections.emptyList()).build();
     }
 

@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,8 +47,8 @@ public class PriceCleanupEventListener extends PageOverContent<Price> {
 
     product.ifPresent(this::cleanPrices);
 
-    long end = System.currentTimeMillis();
-    log.info("{}: Time taken to process event: {} (millis)", event.getRequestId(), end - start);
+    long total = Instant.now().toEpochMilli() - start;
+    log.info("{}: time to process: {}ms", event.getRequestId(), total);
   }
 
   private void cleanPrices(Product product) {

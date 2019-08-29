@@ -8,7 +8,6 @@ public class PromotionTest {
 
   @Test
   public void test() {
-    Promotion dailyDeal = Promotion.DAILY_DEAL;
-    assertEquals("Daily Deal", dailyDeal.getName());
+    assertEquals("Daily Deal", Promotion.DAILY_DEAL);
   }
 }

@@ -36,8 +36,7 @@ public class ProductServiceImpl extends RetryPersist<Product, Long> implements P
   @CacheEvict(value = PRODUCT_CACHE, allEntries = true)
   public synchronized Product save(Product product) {
     log.info(
-        "Saving product: {} with brandId: {} and sellerId: {} and plId: {}",
-        product,
+        "Saving product brandId: {} sellerId: {} plId: {}",
         product.getBrandId(),
         product.getSellerId(),
         product.getPlId());

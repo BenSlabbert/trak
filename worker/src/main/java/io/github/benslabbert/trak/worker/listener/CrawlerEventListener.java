@@ -15,6 +15,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,6 +37,7 @@ public class CrawlerEventListener extends ProductRequest {
   @Async
   @RabbitHandler
   public void receive(CrawlerEvent crawlerEvent) {
+    long start = System.currentTimeMillis();
     log.info("{}: Processing request", crawlerEvent.getRequestId());
 
     long productId = crawlerEvent.getProductId();
@@ -44,6 +46,9 @@ public class CrawlerEventListener extends ProductRequest {
     log.debug("{}: Looking for product with PLID: {}", productId, productId);
 
     findNewProduct(crawlerEvent.getRequestId(), seller, productId);
+
+    long total = Instant.now().toEpochMilli() - start;
+    log.info("{}: time to process: {}ms", crawlerEvent.getRequestId(), total);
   }
 
   private void findNewProduct(String reqId, Seller seller, long plId) {

@@ -33,7 +33,6 @@ public class PromotionEntityServiceImpl implements PromotionEntityService {
   @Override
   @CacheEvict(value = PROMOTION_ENTITY_CACHE, allEntries = true)
   public PromotionEntity save(String promotionName, Long promotionId, List<Long> plIds) {
-    List<Product> products = productService.findAllByPLIDsIn(plIds);
     log.info("Finding promotion for promotionId: {}", promotionId);
     // todo sometimes returns duplicates
     Optional<PromotionEntity> p = repo.findByTakealotPromotionIdEquals(promotionId);
@@ -43,6 +42,7 @@ public class PromotionEntityServiceImpl implements PromotionEntityService {
       Lock lock = lockRegistry.obtain(lockKey);
       log.debug("Obtaining lock: {}", lockKey);
       lock.lock();
+      List<Product> products = productService.findAllByPLIDsIn(plIds);
 
       try {
         return repo.saveAndFlush(

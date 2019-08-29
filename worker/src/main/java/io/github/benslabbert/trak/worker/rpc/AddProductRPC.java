@@ -34,10 +34,6 @@ public class AddProductRPC extends ProductRequest {
   private final BrandService brandService;
   private final PriceService priceService;
 
-  //  public Long addProductSync(AddProductRPCRequest addProductRPCRequest) {
-  //    return addProduct(addProductRPCRequest);
-  //  }
-
   @Async
   @Nullable
   @RabbitListener(queues = ADD_PRODUCT_RPC_QUEUE)
@@ -45,7 +41,8 @@ public class AddProductRPC extends ProductRequest {
     return CompletableFuture.completedFuture(addProduct(addProductRPCRequest));
   }
 
-  private Long addProduct(AddProductRPCRequest addProductRPCRequest) {
+  @Nullable
+  public Long addProduct(AddProductRPCRequest addProductRPCRequest) {
     log.info("Adding product: {}", addProductRPCRequest);
 
     Optional<Product> product = productService.findByPlID(addProductRPCRequest.getPlId());

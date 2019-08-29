@@ -33,7 +33,7 @@ public class PromotionEntity extends TimestampEntity implements Serializable {
   @Column(name = "takealot_promotion_id")
   private Long takealotPromotionId;
 
-  @OneToMany(cascade = CascadeType.ALL)
+  @OneToMany
   @JoinTable(
       name = "link_promotion_product",
       schema = Schema.TRAK,

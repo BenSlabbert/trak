@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -40,6 +41,7 @@ public class BiggestSavingsListener extends PageOverAll<Product> {
   @Async
   @RabbitHandler
   public void processSavingsEvent(String uuid) {
+    long start = Instant.now().toEpochMilli();
     log.info("{}: Processing biggest savings event", uuid);
     savings.clear();
 
@@ -59,6 +61,8 @@ public class BiggestSavingsListener extends PageOverAll<Product> {
                     BestSaving.builder().productId(f.getProductId()).saving(f.getSavings()).build())
             .collect(Collectors.toList()));
 
+    long total = Instant.now().toEpochMilli() - start;
+    log.info("{}: time to process: {}ms", uuid, total);
     log.info("{}: Done processing", uuid);
   }
 

@@ -2,33 +2,32 @@ package io.github.benslabbert.trak.worker.listener;
 
 import io.github.benslabbert.trak.core.model.Promotion;
 import io.github.benslabbert.trak.entity.jpa.Product;
-import io.github.benslabbert.trak.entity.jpa.PromotionEntity;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.jpa.service.PromotionEntityService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.promotion.PromotionEvent;
+import io.github.benslabbert.trak.entity.rabbitmq.event.promotion.PromotionEventFactory;
 import io.github.benslabbert.trak.entity.rabbitmq.rpc.AddProductRPCRequestFactory;
 import io.github.benslabbert.trak.worker.model.PromotionIds;
 import io.github.benslabbert.trak.worker.model.TakealotPromotion;
 import io.github.benslabbert.trak.worker.model.TakealotPromotionsResponse;
 import io.github.benslabbert.trak.worker.rpc.AddProductRPC;
 import io.github.benslabbert.trak.worker.service.TakealotAPIService;
-import io.github.benslabbert.trak.worker.thread.TakealotPromotionThread;
-import io.github.benslabbert.trak.worker.thread.TakealotPromotionThreadFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static io.github.benslabbert.trak.core.rabbitmq.Queue.PROMOTIONS_QUEUE;
@@ -42,70 +41,56 @@ import static io.github.benslabbert.trak.core.rabbitmq.Queue.PROMOTIONS_QUEUE;
 public class PromotionEventListener {
 
   private final PromotionEntityService promotionEntityService;
-  private final TakealotPromotionThreadFactory threadFactory;
   private final TakealotAPIService takealotAPIService;
+  private final RabbitTemplate rabbitTemplate;
   private final ProductService productService;
   private final SellerService sellerService;
   private final AddProductRPC addProductRPC;
+  private final Queue promotionQueue;
 
   // todo add Message message to method params to check for redelivery and other headers to avoid
   //  reprocessing events
   @Async
   @RabbitHandler
-  public void receive(PromotionEvent promotionEvent) throws InterruptedException {
+  public void receive(PromotionEvent promotionEvent) {
+    long start = Instant.now().toEpochMilli();
     String reqId = promotionEvent.getRequestId();
     Promotion p = promotionEvent.getPromotion();
     log.info("{}: Got promotion event for: {}", reqId, p);
 
-    if (p.equals(Promotion.DAILY_DEAL)) {
-      log.info("{}: Getting Daily Deals", reqId);
-      savePromotion(takealotAPIService.getPLIDsOnPromotion(p));
-    } else if (p.equals(Promotion.ALL)) {
-      log.info("{}: Getting All Promotions", reqId);
-      getAllPromotions(promotionEvent);
+    switch (p.getName()) {
+      case Promotion.DAILY_DEAL:
+        log.info("{}: Getting Daily Deals", reqId);
+        savePromotion(takealotAPIService.getPLIDsOnPromotion(p.getName()));
+        break;
+      case Promotion.ALL:
+        log.info("{}: Getting All Promotions", reqId);
+        Optional<TakealotPromotion> allPromotions = takealotAPIService.getTakealotPromotions();
+
+        if (allPromotions.isEmpty()) {
+          log.warn("{}: Failed to get all promotions", reqId);
+          return;
+        }
+
+        for (TakealotPromotionsResponse r : allPromotions.get().getResponseList()) {
+          PromotionEvent event =
+              PromotionEventFactory.createPromotionEvent(
+                  Promotion.create(r.getDisplayName()), UUID.randomUUID().toString());
+
+          log.info("{}: Creating promotion event: {}", reqId, event.getRequestId());
+          rabbitTemplate.convertAndSend(promotionQueue.getName(), event);
+        }
+
+        break;
+      default:
+        log.info("{}: Creating promotion: {}", reqId, p.getName());
+        savePromotion(takealotAPIService.getPLIDsOnPromotion(p.getName()));
     }
+
+    long total = Instant.now().toEpochMilli() - start;
+    log.info("{}: time to process: {}ms", reqId, total);
   }
 
-  private void getAllPromotions(PromotionEvent promotionEvent) throws InterruptedException {
-    log.info("{}: Getting All Promotions", promotionEvent.getRequestId());
-    Optional<TakealotPromotion> takealotPromotion = takealotAPIService.getTakealotPromotion();
-
-    if (takealotPromotion.isEmpty()) {
-      log.warn("{}: Failed to get promotions", promotionEvent.getRequestId());
-      return;
-    }
-
-    List<TakealotPromotionThread> threads = new ArrayList<>();
-
-    for (TakealotPromotionsResponse r : takealotPromotion.get().getResponseList()) {
-      threads.add(threadFactory.create(r, promotionEvent.getRequestId()));
-    }
-
-    for (Thread t : threads) {
-      log.info("{}: Starting promotion thread", promotionEvent.getRequestId());
-      t.start();
-    }
-
-    // todo refactor this to use CompletableFuture<> and the thread pool otherwise the thread sits
-    //  here and does nothing
-    log.info("{}: Waiting for all worker threads to finish", promotionEvent.getRequestId());
-    for (Thread t : threads) t.join();
-
-    for (TakealotPromotionThread t : threads) {
-      Optional<PromotionEntity> result = t.getResult();
-      if (result.isPresent()) {
-        log.info(
-            "{}: Created promotion: {} DB ID: {}",
-            promotionEvent.getRequestId(),
-            result.get().getTakealotPromotionId(),
-            result.get().getId());
-      } else {
-        log.warn("{}: Failed to create promotion!", promotionEvent.getRequestId());
-      }
-    }
-  }
-
-  // todo: fix duplicate code TakealotPromotionThread#savePromotion
   private void savePromotion(PromotionIds onPromotion) {
     if (onPromotion.getPlIDs().isEmpty()) {
       log.info("No plIDs on promotion");
@@ -127,8 +112,12 @@ public class PromotionEventListener {
           products.stream().map(Product::getPlId).collect(Collectors.toList());
       onPromotion.getPlIDs().removeAll(productPLIds);
 
+      log.info("Must add PLIds: {}", productPLIds);
+
       for (Long plId : onPromotion.getPlIDs()) {
+        log.info("Before async request");
         Optional<Long> productId = getProductId(seller.get(), plId);
+        log.info("After async request");
 
         if (productId.isEmpty()) {
           log.warn("Failed to add product for plId: {}", plId);
@@ -138,6 +127,7 @@ public class PromotionEventListener {
         Optional<Product> p = productService.findOne(productId.get());
 
         if (p.isPresent()) {
+          log.info("Adding PLId: {}", p.get().getPlId());
           products.add(p.get());
         } else {
           log.warn("No product for id: {}", productId);
@@ -145,23 +135,18 @@ public class PromotionEventListener {
       }
     }
 
-    log.info("{}: Saving products for promotion", onPromotion.getName());
+    log.info("{}: Saving products for promotion...", onPromotion.getName());
     promotionEntityService.save(
         onPromotion.getName(), onPromotion.getPromotionId(), onPromotion.getPlIDs());
   }
 
-  // todo refactor duplicate TakealotPromotionThread#getProductId
   private Optional<Long> getProductId(Seller seller, Long plId) {
     try {
-      CompletableFuture<Long> res =
-          addProductRPC.addProductAsync(
+      Long res =
+          addProductRPC.addProduct(
               AddProductRPCRequestFactory.create(URI.create(getApiUrl(plId)), seller, plId));
 
-      if (res == null) return Optional.empty();
-      return Optional.ofNullable(res.get());
-    } catch (ExecutionException e) {
-      log.warn("Execution exception while getting value from addProductAsync for plId: " + plId, e);
-      return Optional.empty();
+      return Optional.ofNullable(res);
     } catch (Exception e) {
       log.warn("General exception while getting value from addProductAsync for plId: " + plId, e);
       return Optional.empty();

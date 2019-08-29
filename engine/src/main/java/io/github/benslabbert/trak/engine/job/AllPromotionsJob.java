@@ -26,13 +26,14 @@ public class AllPromotionsJob implements Runnable {
   //    @Scheduled(cron = "0 0 0 0/1 * ?")
   @Scheduled(initialDelay = 0L, fixedDelay = Long.MAX_VALUE)
   public void run() {
-    log.info("{}: Starting job", Promotion.ALL.getName());
+    log.info("{}: Starting job", Promotion.ALL);
 
     PromotionEvent event =
-        PromotionEventFactory.createPromotionEvent(Promotion.ALL, UUID.randomUUID().toString());
+        PromotionEventFactory.createPromotionEvent(
+            Promotion.createAll(), UUID.randomUUID().toString());
 
     rabbitTemplate.convertAndSend(promotionQueue.getName(), event);
 
-    log.debug("{}: Finished job", Promotion.ALL.getName());
+    log.debug("{}: Finished job", Promotion.ALL);
   }
 }

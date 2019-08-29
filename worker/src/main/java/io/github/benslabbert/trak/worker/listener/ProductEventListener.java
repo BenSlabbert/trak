@@ -12,6 +12,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRODUCT_QUEUE;
@@ -27,6 +28,7 @@ public class ProductEventListener extends ProductRequest {
   @Async
   @RabbitHandler
   public void receive(PriceUpdateEvent priceUpdateEvent) {
+    long start = Instant.now().toEpochMilli();
     log.info("{}: Processing update price event", priceUpdateEvent.getRequestId());
 
     Optional<ProductResponse> productResponse =
@@ -50,5 +52,8 @@ public class ProductEventListener extends ProductRequest {
             .currentPrice(currentPrice)
             .listedPrice(listedPrice)
             .build());
+
+    long total = Instant.now().toEpochMilli() - start;
+    log.info("{}: time to process: {}ms", priceUpdateEvent.getRequestId(), total);
   }
 }
