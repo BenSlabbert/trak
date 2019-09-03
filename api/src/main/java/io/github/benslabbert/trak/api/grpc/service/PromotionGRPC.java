@@ -19,6 +19,7 @@ import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -123,13 +124,48 @@ public class PromotionGRPC extends PromotionServiceGrpc.PromotionServiceImplBase
       return;
     }
 
-    Status status =
-        Status.newBuilder()
-            .setCode(Code.UNIMPLEMENTED.getNumber())
-            .setMessage("AllPromotions not yet implemented")
-            .build();
+    log.info("Looking for promotion with id: {}", promotionId);
 
-    responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+    Optional<PromotionEntity> promotion = promotionEntityService.findById(promotionId);
+
+    if (promotion.isEmpty()) {
+      log.warn("No promotion for id: {}", promotionId);
+
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.NOT_FOUND.getNumber())
+              .setMessage("No promotion found for id: " + promotionId)
+              .build();
+
+      responseObserver.onError(StatusProto.toStatusRuntimeException(status));
+      return;
+    }
+
+    List<Product> products = promotion.get().getProducts();
+
+    PageRequest pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getPageLen());
+    int start = (int) pageable.getOffset();
+    int end = Math.min((start + pageable.getPageSize()), products.size());
+    Page<Product> pages = new PageImpl<>(products.subList(start, end), pageable, products.size());
+
+    responseObserver.onNext(
+        PromotionResponse.newBuilder()
+            .addAllProducts(
+                pages.getContent().stream().map(this::getProduct).collect(Collectors.toList()))
+            .setPageResponse(getPageResponse(pages))
+            .build());
+    responseObserver.onCompleted();
+  }
+
+  private ProductMessage getProduct(Product p) {
+    return ProductMessage.newBuilder()
+        .setId(p.getId())
+        .setName(p.getName())
+        .setPrice(getPrice(p))
+        .setProductUrl(p.getUrl())
+        .setImageUrl(getProductImageUrl(p))
+        .addAllCategories(addCategories(p))
+        .build();
   }
 
   private void getDailyDeals(

@@ -12,5 +12,7 @@ public interface PromotionEntityService {
 
   Optional<PromotionEntity> findLatestPromotion(String promotionName);
 
+  Optional<PromotionEntity> findById(long id);
+
   Page<PromotionEntity> findLatestPromotion(PageRequest pageRequest);
 }

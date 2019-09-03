@@ -67,6 +67,12 @@ public class PromotionEntityServiceImpl implements PromotionEntityService {
   }
 
   @Override
+  @Cacheable(value = PROMOTION_ENTITY_CACHE, key = "#id", unless = "#result == null")
+  public Optional<PromotionEntity> findById(long id) {
+    return repo.findById(id);
+  }
+
+  @Override
   @Cacheable(
       value = PROMOTION_ENTITY_CACHE,
       key = "'page:' + #pageRequest.getPageNumber() + ':size:' + #pageRequest.getPageSize()",
