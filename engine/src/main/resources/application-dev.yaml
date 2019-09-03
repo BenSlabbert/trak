@@ -21,7 +21,7 @@ spring:
     host: localhost
     port: 6379
     ssl: false
-    password: password # todo add password to compose profile as well
+    password: password
   datasource:
     url: jdbc:mysql://localhost/trak
     username: user

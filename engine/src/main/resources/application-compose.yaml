@@ -21,6 +21,7 @@ spring:
     host: ${REDIS_HOST:redis}
     port: ${REDIS_PORT:6379}
     ssl: ${REDIS_USE_SSL:false}
+    password: ${REDIS_PASSWORD:password}
   datasource:
     url: jdbc:mysql://${MARIADB_HOST:rds}/trak
     username: ${MARIADB_USERNAME:user}
