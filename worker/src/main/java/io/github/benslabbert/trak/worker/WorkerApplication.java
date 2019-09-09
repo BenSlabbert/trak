@@ -18,6 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.HashMap;
+import java.util.concurrent.Executor;
 
 import static io.github.benslabbert.trak.core.rabbitmq.Header.X_MESSAGE_TTL;
 import static io.github.benslabbert.trak.core.rabbitmq.Queue.*;
@@ -40,12 +41,12 @@ public class WorkerApplication {
 
   @Primary
   @Bean
-  public ThreadPoolTaskExecutor executor() {
+  public Executor executor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
     executor.setCorePoolSize(2);
     executor.setMaxPoolSize(4);
-    executor.setQueueCapacity(Integer.MAX_VALUE);
+    executor.setQueueCapacity(500);
     executor.setThreadNamePrefix("TRAK-WORKER-");
     executor.initialize();
 

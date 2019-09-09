@@ -1,15 +1,10 @@
 package io.github.benslabbert.trak.engine.job;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.jpa.service.SellerService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.price.update.PriceUpdateEvent;
-import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -20,6 +15,12 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Collections;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 
 @RunWith(SpringRunner.class)
 public class PriceUpdateJobTest {

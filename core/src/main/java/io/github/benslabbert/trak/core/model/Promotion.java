@@ -3,11 +3,9 @@ package io.github.benslabbert.trak.core.model;
 import java.io.Serializable;
 
 public class Promotion implements Serializable {
-  private static final long serialVersionUID = -8880918133264488082L;
-
   public static final String ALL = "All";
   public static final String DAILY_DEAL = "Daily Deal";
-
+  private static final long serialVersionUID = -8880918133264488082L;
   private String name;
 
   private Promotion(String name) {

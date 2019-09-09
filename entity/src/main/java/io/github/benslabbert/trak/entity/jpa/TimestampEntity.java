@@ -1,12 +1,13 @@
 package io.github.benslabbert.trak.entity.jpa;
 
-import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Date;
 
 @Getter
 @Setter

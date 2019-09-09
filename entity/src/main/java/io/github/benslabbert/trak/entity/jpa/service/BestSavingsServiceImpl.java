@@ -1,16 +1,17 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
-import static io.github.benslabbert.trak.core.cache.CacheNames.BEST_SAVINGS_CACHE;
-
 import io.github.benslabbert.trak.entity.jpa.BestSaving;
 import io.github.benslabbert.trak.entity.jpa.repo.BestSavingsRepo;
-import java.util.Collection;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
+
+import static io.github.benslabbert.trak.core.cache.CacheNames.BEST_SAVINGS_CACHE;
 
 @Slf4j
 @Service

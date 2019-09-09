@@ -233,8 +233,13 @@ public class ProductGRPC extends ProductServiceGrpc.ProductServiceImplBase {
   }
 
   private BrandMessage getBrand(Product p) {
+    if (p.getBrand() == null) {
+      // not loaded from db
+      return BrandMessage.newBuilder().setId(p.getBrand().getId()).build();
+    }
+
     return BrandMessage.newBuilder()
-        //        .setName(p.getBrand().getName()) // not loaded from db
+        .setName(p.getBrand().getName())
         .setId(p.getBrand().getId())
         .build();
   }

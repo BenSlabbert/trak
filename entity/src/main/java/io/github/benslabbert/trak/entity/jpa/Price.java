@@ -1,10 +1,11 @@
 package io.github.benslabbert.trak.entity.jpa;
 
+import lombok.*;
+
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
-import javax.persistence.*;
-import lombok.*;
 
 @Entity
 @Table(schema = Schema.TRAK, name = "price")
@@ -35,11 +36,6 @@ public class Price implements Serializable {
   @Column(nullable = false, name = "created")
   private Date created;
 
-  @PrePersist
-  protected void onCreate() {
-    created = new Date();
-  }
-
   public static boolean equals(Price price1, Price price2) {
 
     price1 = normalise(price1);
@@ -69,5 +65,10 @@ public class Price implements Serializable {
     c.set(Calendar.MILLISECOND, 0);
 
     return c.getTime();
+  }
+
+  @PrePersist
+  protected void onCreate() {
+    created = new Date();
   }
 }

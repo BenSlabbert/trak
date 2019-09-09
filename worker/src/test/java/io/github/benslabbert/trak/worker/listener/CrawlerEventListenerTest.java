@@ -7,12 +7,13 @@ import io.github.benslabbert.trak.entity.jpa.service.PriceService;
 import io.github.benslabbert.trak.entity.jpa.service.ProductService;
 import io.github.benslabbert.trak.entity.rabbitmq.event.crawler.CrawlerEvent;
 import io.github.benslabbert.trak.entity.rabbitmq.event.crawler.CrawlerEventFactory;
-import java.util.UUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.UUID;
 
 @RunWith(SpringRunner.class)
 public class CrawlerEventListenerTest {

@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Author {
 
-    @JsonProperty(value = "Author")
-    private String author;
+  @JsonProperty(value = "Author")
+  private String author;
 }

@@ -18,14 +18,13 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 public class LockRegistryConfigTest {
 
-  private static LettuceConnectionFactory connectionFactory;
-  private LockRegistryConfig lockRegistryConfig;
-
   @ClassRule
   public static GenericContainer redis =
       new GenericContainer<>("redis:5.0.4-alpine")
           .withCommand("redis-server --requirepass password")
           .withExposedPorts(6379);
+  private static LettuceConnectionFactory connectionFactory;
+  private LockRegistryConfig lockRegistryConfig;
 
   @BeforeClass
   public static void beforeClass() {

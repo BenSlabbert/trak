@@ -26,11 +26,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SearchGRPC extends SearchServiceGrpc.SearchServiceImplBase {
 
+  private static final PageRequest pageable = PageRequest.of(0, 20);
   private final ESCategoryService categoryService;
   private final ESProductService productService;
   private final ESBrandService brandService;
-
-  private static final PageRequest pageable = PageRequest.of(0, 20);
 
   @Override
   public void brandSearch(SearchRequest request, StreamObserver<SearchResponse> responseObserver) {

@@ -1,6 +1,7 @@
 package io.github.benslabbert.trak.entity.jpa.service;
 
 import io.github.benslabbert.trak.entity.jpa.BestSaving;
+
 import java.util.Collection;
 import java.util.List;
 
