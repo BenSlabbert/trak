@@ -3,6 +3,7 @@
 -- changeset trak:1
 
 create schema if not exists trak;
+alter database trak collate = 'utf8mb4_general_ci';
 
 -- changeset trak:2
 
