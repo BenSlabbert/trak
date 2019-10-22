@@ -2,16 +2,21 @@ server:
   port: 8081
 spring:
   config:
-    name: trak-search
+    name: trak-search # todo rename sonic-something
 
 logging:
   level:
     org.springframework.data.elasticsearch.core: DEBUG
 
-elasticsearch:
-  host: ${ES_HOST:es}
-  port: ${ES_PORT:9300}
-  clustername: ${ES_CLUSTER_NAME:docker-cluster}
+sonic:
+  host: ${SONIC_HOST:127.0.0.1}
+  port: ${SONIC_PORT:1491}
+  password: ${SONIC_PASSWORD:passwd}
+  pool:
+    size: ${SONIC_POOL_SIZE:4}
+  timeout:
+    connection: ${SONIC_TIMEOUT_CONN:5000}
+    read: ${SONIC_TIMEOUT_READ:5000}
 
 management:
   endpoints:

@@ -1,12 +1,12 @@
 package io.github.benslabbert.trak.search;
 
 import io.grpc.*;
+import io.grpc.protobuf.services.ProtoReflectionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.io.IOException;
@@ -14,7 +14,6 @@ import java.util.Map;
 
 @Slf4j
 @SpringBootApplication
-@EnableElasticsearchRepositories(basePackages = "io.github.benslabbert.trak.search.es.repo")
 public class SearchApplication {
 
   private static ThreadPoolTaskExecutor executor;
@@ -55,6 +54,8 @@ public class SearchApplication {
       log.info("Adding gRPC service: {}", entry.getKey());
       serverBuilder.addService(entry.getValue());
     }
+
+    serverBuilder.addService(ProtoReflectionService.newInstance());
 
     log.info("Starting gRPC server");
     serverBuilder.executor(executor);

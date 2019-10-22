@@ -8,10 +8,15 @@ logging:
   level:
     org.springframework.data.elasticsearch.core: DEBUG
 
-elasticsearch:
-  host: localhost
-  port: 9300
-  clustername: docker-cluster
+sonic:
+  host: 127.0.0.1
+  port: 1491
+  password: passwd
+  pool:
+    size: 4
+  timeout:
+    connection: 5000
+    read: 5000
 
 management:
   endpoints:

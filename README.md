@@ -61,3 +61,15 @@ This project was inspired by the site: [camelcamelcamel](https://camelcamelcamel
 
 * [Why large base image OpenJDK 11](https://stackoverflow.com/questions/53375613/why-is-the-java-11-base-docker-image-so-large-openjdk11-jre-slim)
 * [Minimal image with azul/zulu-openjdk-alpine:11](https://stackoverflow.com/questions/53669151/java-11-application-as-lightweight-docker-image/53669152#53669152)
+
+### gRPC
+
+Trak uses gRPC as the primary means of communicating between micro services. 
+
+The [trak-gRPC project](https://github.com/BenSlabbert/trak-grpc) contains all proto files as well as any compiled protos.
+
+Use the [evns-cli](https://github.com/ktr0731/evans) to interact with the grpc services, example below
+
+```shell script
+evans --repl -r --host 127.0.0.1 --port SERVICE_PORT --path /path/to/cloned/trak-gRPC/src/main/proto/proto.proto
+``` 
