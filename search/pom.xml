@@ -77,9 +77,9 @@
     </dependency>
 
     <dependency>
-      <groupId>io.github.benslabbert.trak</groupId>
+      <groupId>io.github.benslabbert</groupId>
       <artifactId>java-sonic</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>ee42d5c81785807d5ffe1ba0959b3bd4f24d8b4d</version>
     </dependency>
 
     <!-- SPRING -->
