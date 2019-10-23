@@ -8,6 +8,7 @@ import io.github.benslabbert.trak.grpc.SearchResponse;
 import io.github.benslabbert.trak.grpc.SearchServiceGrpc;
 import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -74,6 +75,14 @@ public class IT extends TestInfrastructure {
             Collection.PRODUCT, "3", "product", UUID.randomUUID().toString()));
     // block until ingesting task is run
     Thread.sleep(1000L * 10L);
+  }
+
+  @AfterClass
+  public static void cleanUp() {
+    log.info("Stopping search container");
+    SEARCH.stop();
+    log.info("Stopping all external infrastructure");
+    stopAll();
   }
 
   @Test

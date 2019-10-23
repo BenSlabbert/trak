@@ -30,6 +30,11 @@ class TestInfrastructure {
           .withExposedPorts(5672);
 
   static {
+    log.info("Starting all external infrastructure");
     Stream.of(SONIC, RABBITMQ).parallel().forEach(GenericContainer::start);
+  }
+
+  static void stopAll() {
+    Stream.of(SONIC, RABBITMQ).parallel().forEach(GenericContainer::stop);
   }
 }
