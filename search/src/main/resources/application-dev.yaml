@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: ${TOMCAT_PORT:8081}
 spring:
   config:
     name: trak-search

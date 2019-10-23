@@ -62,12 +62,8 @@ services:
     ports:
       - 1491:1491
     volumes:
+      - sonic-data:/var/lib/sonic/store/
       - ./sonic/sonic.cfg:/etc/sonic.cfg
-
-  ui:
-    image: benjaminslabbert/trak_ui:1.0.2
-    ports:
-      - 3000:3000
 
 volumes:
   rabbit-data:
@@ -75,4 +71,6 @@ volumes:
   rds-data:
     driver: local
   redis-data:
+    driver: local
+  sonic-data:
     driver: local

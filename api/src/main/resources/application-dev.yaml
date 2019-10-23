@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${TOMCAT_PORT:8080}
 spring:
   config:
     name: trak-api
