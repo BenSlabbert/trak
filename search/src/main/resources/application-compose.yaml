@@ -3,17 +3,32 @@ server:
 spring:
   config:
     name: trak-search # todo rename sonic-something
+  rabbitmq:
+    username: ${RABBIT_MQ_USERNAME:trak}
+    password: ${RABBIT_MQ_PASSWORD:password}
+    host: ${RABBIT_MQ_HOST:rabbit}
+    virtual-host: ${RABBIT_MQ_VIRTUAL_HOST:/}
+    port: ${RABBIT_MQ_PORT:5672}
+    listener:
+      simple:
+        concurrency: ${RABBIT_MQ_CONCURRENCY:2}
+        max-concurrency: ${RABBIT_MQ_MAX_CONCURRENCY:2}
+        prefetch: ${RABBIT_MQ_PREFETCH:0}
+        retry:
+          max-attempts: ${RABBIT_MQ_RETRY_MAX_ATTEMPTS:3}
+          enabled: ${RABBIT_MQ_RETRY_ENABLE:true}
+          max-interval: ${RABBIT_MQ_RETRY_INTERVAL:10000ms}
 
 logging:
   level:
-    org.springframework.data.elasticsearch.core: DEBUG
+    com.github.twohou.sonic: DEBUG
 
 sonic:
   host: ${SONIC_HOST:127.0.0.1}
   port: ${SONIC_PORT:1491}
   password: ${SONIC_PASSWORD:passwd}
   pool:
-    size: ${SONIC_POOL_SIZE:4}
+    size: ${SONIC_POOL_SIZE:2}
   timeout:
     connection: ${SONIC_TIMEOUT_CONN:5000}
     read: ${SONIC_TIMEOUT_READ:5000}

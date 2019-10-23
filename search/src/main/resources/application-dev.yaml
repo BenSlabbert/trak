@@ -3,17 +3,32 @@ server:
 spring:
   config:
     name: trak-search
+  rabbitmq:
+    username: trak
+    password: password
+    host: localhost
+    virtual-host: /
+    port: 5672
+    listener:
+      simple:
+        concurrency: 2
+        max-concurrency: 4
+        prefetch: 0
+        retry:
+          max-attempts: 3
+          enabled: true
+          max-interval: 10000ms
 
 logging:
   level:
-    org.springframework.data.elasticsearch.core: DEBUG
+    com.github.twohou.sonic: DEBUG
 
 sonic:
   host: 127.0.0.1
   port: 1491
   password: passwd
   pool:
-    size: 4
+    size: 2
   timeout:
     connection: 5000
     read: 5000

@@ -10,11 +10,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 @Slf4j
 @EnableCaching
@@ -34,6 +37,12 @@ public class ApiApplication {
     } catch (Exception e) {
       log.error("Failed to run application!", e);
     }
+  }
+
+  @Bean
+  @Primary
+  public Executor executor() {
+    return executor;
   }
 
   private static ThreadPoolTaskExecutor setUpExecutor() {

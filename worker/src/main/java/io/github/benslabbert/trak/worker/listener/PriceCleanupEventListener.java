@@ -26,7 +26,7 @@ import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRICE_QUEUE;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RabbitListener(queues = PRICE_QUEUE, containerFactory = "customRabbitListenerContainerFactory")
+@RabbitListener(queues = PRICE_QUEUE)
 public class PriceCleanupEventListener extends PageOverContent<Price> {
 
   private final ProductService productService;

@@ -5,10 +5,6 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +35,8 @@ public class WorkerApplication {
     }
   }
 
-  @Primary
   @Bean
+  @Primary
   public Executor executor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
@@ -51,18 +47,6 @@ public class WorkerApplication {
     executor.initialize();
 
     return executor;
-  }
-
-  @Bean
-  public RabbitListenerContainerFactory<SimpleMessageListenerContainer>
-      customRabbitListenerContainerFactory(ConnectionFactory rabbitConnectionFactory) {
-
-    SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-
-    factory.setConnectionFactory(rabbitConnectionFactory);
-    factory.setPrefetchCount(0);
-
-    return factory;
   }
 
   @Bean

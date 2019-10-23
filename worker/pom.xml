@@ -202,6 +202,15 @@
               <goal>push</goal>
             </goals>
           </execution>
+          <execution>
+            <id>default-2</id>
+            <goals>
+              <goal>tag</goal>
+            </goals>
+            <configuration>
+              <tag>dev</tag>
+            </configuration>
+          </execution>
         </executions>
         <configuration>
           <username>${env.DOCKER_HUB_USERNAME}</username>

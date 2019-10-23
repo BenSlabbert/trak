@@ -12,6 +12,7 @@ import io.grpc.Context;
 import io.grpc.Deadline;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,21 +22,12 @@ import java.util.Optional;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class BrandGRPC extends BrandServiceGrpc.BrandServiceImplBase {
 
   private final ProductServiceGrpc.ProductServiceBlockingStub productServiceBlockingStub;
   private final ProductService productService;
   private final BrandService brandService;
-
-  public BrandGRPC(
-      ProductServiceGrpc.ProductServiceBlockingStub productServiceBlockingStub,
-      ProductService productService,
-      BrandService brandService) {
-
-    this.productServiceBlockingStub = productServiceBlockingStub;
-    this.productService = productService;
-    this.brandService = brandService;
-  }
 
   @Override
   public void brand(BrandRequest request, StreamObserver<BrandResponse> responseObserver) {

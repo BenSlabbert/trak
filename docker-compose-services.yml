@@ -12,7 +12,7 @@ services:
   #      - "PMA_HOST=rds"
 
   portainer:
-    image: portainer/portainer:1.20.2
+    image: portainer/portainer:1.22.1
     ports:
       - 9000:9000
     restart: on-failure
@@ -57,42 +57,12 @@ services:
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
 
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-    restart: on-failure
+  sonic:
+    image: valeriansaliou/sonic:v1.2.3
     ports:
-      - 9200:9200
-      - 9300:9300
+      - 1491:1491
     volumes:
-      - es-data:/usr/share/elasticsearch/data
-    environment:
-      - "discovery.type=single-node"
-      - "transport.host=es"
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:6.4.1
-    restart: on-failure
-    ports:
-      - 5601:5601
-    volumes:
-      - kibana-data:/usr/share/kibana
-    environment:
-      SERVER_NAME: kibana.local
-      ELASTICSEARCH_URL: http://es:9200
-    depends_on:
-      - es
-
-  logstash:
-    build: ./logstash-conf/
-    image: benjaminslabbert/trak_logstash:1.0.2
-    ports:
-      - 9600:9600
-    restart: on-failure
-    environment:
-      - "LS_JAVA_OPTS=-Xms512m -Xmx512m"
-    depends_on:
-      - es
+      - ./sonic/sonic.cfg:/etc/sonic.cfg
 
   ui:
     image: benjaminslabbert/trak_ui:1.0.2
@@ -103,10 +73,6 @@ volumes:
   rabbit-data:
     driver: local
   rds-data:
-    driver: local
-  es-data:
-    driver: local
-  kibana-data:
     driver: local
   redis-data:
     driver: local

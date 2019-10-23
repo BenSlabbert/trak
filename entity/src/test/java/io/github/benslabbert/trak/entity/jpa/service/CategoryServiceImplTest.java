@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -33,6 +34,7 @@ public class CategoryServiceImplTest {
   @Autowired private CategoryRepo repo;
 
   @Mock private DistributedLockRegistry redisLockRegistry;
+  @Mock private RabbitTemplate rabbitTemplate;
 
   private CategoryService service;
   private ReentrantLock reentrantLock = new ReentrantLock();
@@ -41,7 +43,7 @@ public class CategoryServiceImplTest {
   public void setUp() {
     Mockito.when(redisLockRegistry.obtain(Mockito.anyString())).thenReturn(reentrantLock);
 
-    service = new CategoryServiceImpl(repo, redisLockRegistry);
+    service = new CategoryServiceImpl(redisLockRegistry, rabbitTemplate, repo);
 
     repo.saveAndFlush(Category.builder().name("CAT").build());
   }

@@ -20,7 +20,7 @@ import static io.github.benslabbert.trak.core.rabbitmq.Queue.PRODUCT_QUEUE;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RabbitListener(queues = PRODUCT_QUEUE, containerFactory = "customRabbitListenerContainerFactory")
+@RabbitListener(queues = PRODUCT_QUEUE)
 public class ProductEventListener extends ProductRequest {
 
   private final PriceService priceService;

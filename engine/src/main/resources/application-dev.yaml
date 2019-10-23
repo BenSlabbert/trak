@@ -16,7 +16,12 @@ spring:
     listener:
       simple:
         concurrency: 2
-        max-concurrency: 2
+        max-concurrency: 4
+        prefetch: 0
+        retry:
+          max-attempts: 3
+          enabled: true
+          max-interval: 10000ms
   redis:
     host: localhost
     port: 6379

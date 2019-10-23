@@ -3,16 +3,28 @@ package io.github.benslabbert.trak.search;
 import io.grpc.*;
 import io.grpc.protobuf.services.ProtoReflectionService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Queue;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+
+import static io.github.benslabbert.trak.core.rabbitmq.Header.X_MESSAGE_TTL;
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.SONIC_INGEST_QUEUE;
 
 @Slf4j
+@EnableAsync
+@EnableScheduling
 @SpringBootApplication
 public class SearchApplication {
 
@@ -28,6 +40,12 @@ public class SearchApplication {
     } catch (Exception e) {
       log.error("Failed to run application!", e);
     }
+  }
+
+  @Bean
+  @Primary
+  public Executor executor() {
+    return executor;
   }
 
   private static ThreadPoolTaskExecutor setUpExecutor() {
@@ -91,5 +109,18 @@ public class SearchApplication {
   private static void stop() {
     if (server != null) server.shutdown();
     if (executor != null) executor.shutdown();
+  }
+
+  @Bean
+  public Queue sonicIngestQueue() {
+    return new Queue(SONIC_INGEST_QUEUE, true, false, false, queueProperties());
+  }
+
+  private HashMap<String, Object> queueProperties() {
+
+    HashMap<String, Object> arguments = new HashMap<>();
+    arguments.put(X_MESSAGE_TTL, 300000);
+
+    return arguments;
   }
 }

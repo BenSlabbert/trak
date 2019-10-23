@@ -26,12 +26,13 @@ import java.util.List;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class SonicChannelPrototype {
 
-  private final ControlChannel control;
-  private final SearchChannel search;
-  private final IngestChannel ingest;
+  private final ChannelFactory factory;
+  private ControlChannel control;
+  private SearchChannel search;
+  private IngestChannel ingest;
 
   public SonicChannelPrototype(final SonicConfig sonicConfig) throws IOException {
-    ChannelFactory factory =
+    this.factory =
         new ChannelFactory(
             sonicConfig.getAddress(),
             sonicConfig.getPort(),
@@ -58,6 +59,41 @@ public class SonicChannelPrototype {
 
   List<String> suggest(String collection, String bucket, String query) throws IOException {
     return search.suggest(collection, bucket, query);
+  }
+
+  void ping() {
+    try {
+      ingest.ping();
+    } catch (IOException e) {
+      log.warn("Failed to ping ingest, recreate");
+      try {
+        ingest = factory.newIngestChannel();
+      } catch (IOException ex) {
+        log.error("Failed to recreate ingest channel: ", ex);
+      }
+    }
+
+    try {
+      search.ping();
+    } catch (IOException e) {
+      log.warn("Failed to ping search, recreate");
+      try {
+        search = factory.newSearchChannel();
+      } catch (IOException ex) {
+        log.error("Failed to recreate search channel: ", ex);
+      }
+    }
+
+    try {
+      control.ping();
+    } catch (IOException e) {
+      log.warn("Failed to ping control, recreate");
+      try {
+        control = factory.newControlChannel();
+      } catch (IOException ex) {
+        log.error("Failed to recreate control channel: ", ex);
+      }
+    }
   }
 }
 

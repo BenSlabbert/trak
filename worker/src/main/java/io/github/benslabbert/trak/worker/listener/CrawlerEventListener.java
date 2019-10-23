@@ -26,7 +26,7 @@ import static io.github.benslabbert.trak.core.rabbitmq.Queue.CRAWLER_QUEUE;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RabbitListener(queues = CRAWLER_QUEUE, containerFactory = "customRabbitListenerContainerFactory")
+@RabbitListener(queues = CRAWLER_QUEUE)
 public class CrawlerEventListener extends ProductRequest {
 
   private final CategoryService categoryService;

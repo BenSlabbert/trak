@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,6 +31,7 @@ public class BrandServiceImplTest {
   @Autowired private BrandRepo repo;
 
   @Mock private DistributedLockRegistry redisLockRegistry;
+  @Mock private RabbitTemplate rabbitTemplate;
 
   private BrandService service;
   private ReentrantLock reentrantLock = new ReentrantLock();
@@ -37,7 +39,7 @@ public class BrandServiceImplTest {
   @Before
   public void setUp() {
     Mockito.when(redisLockRegistry.obtain(Mockito.anyString())).thenReturn(reentrantLock);
-    service = new BrandServiceImpl(repo, redisLockRegistry);
+    service = new BrandServiceImpl(redisLockRegistry, rabbitTemplate, repo);
   }
 
   @After

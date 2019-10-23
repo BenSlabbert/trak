@@ -17,6 +17,11 @@ spring:
       simple:
         concurrency: ${RABBIT_MQ_CONCURRENCY:2}
         max-concurrency: ${RABBIT_MQ_MAX_CONCURRENCY:2}
+        prefetch: ${RABBIT_MQ_PREFETCH:0}
+        retry:
+          max-attempts: ${RABBIT_MQ_RETRY_MAX_ATTEMPTS:3}
+          enabled: ${RABBIT_MQ_RETRY_ENABLE:true}
+          max-interval: ${RABBIT_MQ_RETRY_INTERVAL:10000ms}
   redis:
     host: ${REDIS_HOST:redis}
     port: ${REDIS_PORT:6379}

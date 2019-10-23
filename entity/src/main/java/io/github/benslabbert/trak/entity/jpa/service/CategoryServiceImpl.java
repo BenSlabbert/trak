@@ -3,8 +3,11 @@ package io.github.benslabbert.trak.entity.jpa.service;
 import io.github.benslabbert.trak.core.concurrent.DistributedLockRegistry;
 import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.repo.CategoryRepo;
+import io.github.benslabbert.trak.entity.rabbitmq.event.sonic.Collection;
+import io.github.benslabbert.trak.entity.rabbitmq.event.sonic.IngestEventFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,9 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 
 import static io.github.benslabbert.trak.core.cache.CacheNames.CATEGORY_CACHE;
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.SONIC_INGEST_QUEUE;
 
 @Slf4j
 @Service
@@ -22,8 +27,9 @@ import static io.github.benslabbert.trak.core.cache.CacheNames.CATEGORY_CACHE;
 @RequiredArgsConstructor
 public class CategoryServiceImpl extends RetryPersist<Category, Long> implements CategoryService {
 
-  private final CategoryRepo repo;
   private final DistributedLockRegistry lockRegistry;
+  private final RabbitTemplate rabbitTemplate;
+  private final CategoryRepo repo;
 
   @Override
   public List<Category> createCategories(List<String> names) {
@@ -38,7 +44,7 @@ public class CategoryServiceImpl extends RetryPersist<Category, Long> implements
 
   @Override
   public Category createCategory(String name) {
-    name = name.replaceAll("  ", " ").trim().toUpperCase();
+    name = name.replace("  ", " ").trim().toUpperCase();
 
     String lockKey = "category-" + name;
     Lock lock = lockRegistry.obtain(lockKey);
@@ -52,7 +58,16 @@ public class CategoryServiceImpl extends RetryPersist<Category, Long> implements
         return category.get();
       }
 
-      return save(Category.builder().name(name).build());
+      Category c = save(Category.builder().name(name).build());
+      log.info("Id {} Name {} to be ingested in Sonic", c.getId(), c.getName());
+      rabbitTemplate.convertAndSend(
+          SONIC_INGEST_QUEUE,
+          IngestEventFactory.createIngestEvent(
+              Collection.CATEGORY,
+              c.getId().toString(),
+              c.getName(),
+              UUID.randomUUID().toString()));
+      return c;
     } finally {
       log.debug("Releasing lock: {}", lockKey);
       lock.unlock();

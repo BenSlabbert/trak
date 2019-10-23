@@ -17,6 +17,7 @@ spring:
       simple:
         concurrency: 2
         max-concurrency: 4
+        prefetch: 0
         retry:
           max-attempts: 3
           enabled: true

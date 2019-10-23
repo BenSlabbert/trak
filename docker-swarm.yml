@@ -72,7 +72,7 @@ services:
       - es
       - redis
     labels:
-      - "description=Trak Search, searches for Elasticsearch"
+      - "description=Trak Search, searches on Sonic"
     networks:
       - backend
       - frontend
@@ -222,88 +222,6 @@ services:
       placement:
         constraints: [node.role == manager]
 
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-    volumes:
-      - es-data:/usr/share/elasticsearch/data
-    environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.minimum_master_nodes=1"
-      - "discovery.zen.ping.unicast.hosts=es"
-      - "node.master=true"
-      - "node.data=true"
-      - "node.ingest=true"
-    stop_grace_period: 1m30s
-    networks:
-      - backend
-    labels:
-      - "description=Elastic Search"
-    deploy:
-      replicas: 1
-      endpoint_mode: vip
-      mode: replicated
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:6.4.1
-    ports:
-      - 5601:5601
-    volumes:
-      - kibana-data:/usr/share/kibana
-    environment:
-      SERVER_NAME: kibana.local
-      ELASTICSEARCH_URL: http://es:9200
-    depends_on:
-      - es
-    stop_grace_period: 1m30s
-    networks:
-      - backend
-      - frontend
-    labels:
-      - "description=Kibana ELK UI"
-    deploy:
-      replicas: 1
-      mode: replicated
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-
-  logstash:
-    image: benjaminslabbert/trak_logstash:1.0.4-1565000104
-    environment:
-      - "LS_JAVA_OPTS=-Xms512m -Xmx512m"
-    depends_on:
-      - es
-      - kibana
-    stop_grace_period: 1m30s
-    networks:
-      - backend
-    labels:
-      - "description=Logstash Data Pipeline"
-    deploy:
-      replicas: 1
-      mode: replicated
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-
   ##############
   # Monitoring #
   ##############
@@ -422,7 +340,5 @@ volumes:
   prometheus-data:
   grafana-data:
   rabbit-data:
-  kibana-data:
   redis-data:
   rds-data:
-  es-data:

@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk-alpine:11.0.3-jre
+FROM azul/zulu-openjdk-alpine:11.0.4-jre
 
 ENV JAVA_OPTS="-Xmx128m -Xms128m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify"
 

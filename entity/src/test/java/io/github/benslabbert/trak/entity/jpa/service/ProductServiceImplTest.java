@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +44,7 @@ public class ProductServiceImplTest {
   @Autowired private ProductRepo repo;
 
   @Mock private DistributedLockRegistry redisLockRegistry;
+  @Mock private RabbitTemplate rabbitTemplate;
 
   private ProductService service;
   private ReentrantLock reentrantLock = new ReentrantLock();
@@ -52,10 +54,11 @@ public class ProductServiceImplTest {
     Mockito.when(redisLockRegistry.obtain(Mockito.anyString())).thenReturn(reentrantLock);
     service =
         new ProductServiceImpl(
-            repo,
-            new BrandServiceImpl(brandRepo, redisLockRegistry),
+            redisLockRegistry,
+            rabbitTemplate,
             new SellerServiceImpl(sellerRepo, redisLockRegistry),
-            redisLockRegistry);
+            new BrandServiceImpl(redisLockRegistry, rabbitTemplate, brandRepo),
+            repo);
 
     Seller seller = sellerRepo.saveAndFlush(Seller.builder().name("seller").build());
     Brand brand = brandRepo.saveAndFlush(Brand.builder().name("brand").build());

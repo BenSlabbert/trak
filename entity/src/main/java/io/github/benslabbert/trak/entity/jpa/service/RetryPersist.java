@@ -22,9 +22,10 @@ public abstract class RetryPersist<T, ID> {
     } else if (retry > 1) {
       log.warn("Lock exception, retrying... {}", retry);
       try {
-        Thread.sleep(100 * retry);
+        Thread.sleep(100L * retry);
       } catch (InterruptedException e) {
-        throw new OptimisticLockingFailureException("Failed to persist!");
+        Thread.currentThread().interrupt();
+        throw new OptimisticLockingFailureException("Failed to sleep retry/persist!");
       }
     }
 

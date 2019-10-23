@@ -29,7 +29,7 @@ import static io.github.benslabbert.trak.core.rabbitmq.Queue.SAVINGS_QUEUE;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RabbitListener(queues = SAVINGS_QUEUE, containerFactory = "customRabbitListenerContainerFactory")
+@RabbitListener(queues = SAVINGS_QUEUE)
 public class BiggestSavingsListener extends PageOverAll<Product> {
 
   private final BestSavingsService bestSavingsService;

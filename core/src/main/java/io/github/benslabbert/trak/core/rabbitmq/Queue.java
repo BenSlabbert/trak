@@ -9,5 +9,8 @@ public class Queue {
   public static final String SAVINGS_QUEUE = "savings";
   public static final String PROMOTIONS_QUEUE = "promotions";
 
+  // SONIC QUEUES
+  public static final String SONIC_INGEST_QUEUE = "sonic_ingest_queue";
+
   private Queue() {}
 }

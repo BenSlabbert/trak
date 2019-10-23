@@ -3,6 +3,7 @@ package io.github.benslabbert.trak.search.sonic;
 import io.github.benslabbert.trak.search.config.SonicConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.util.concurrent.BlockingQueue;
 public class SonicBlockingObjectPool {
 
   private final BlockingQueue<SonicChannelPrototype> sonicChannelPrototypeQueue;
+  private final SonicConfig sonicConfig;
 
   public SonicBlockingObjectPool(
       final ObjectFactory<SonicChannelPrototype> sonicObjectFactory,
@@ -29,14 +31,24 @@ public class SonicBlockingObjectPool {
 
     sonicChannelPrototypeQueue =
         new ArrayBlockingQueue<>(sonicConfig.getPoolSize(), true, instances);
+    this.sonicConfig = sonicConfig;
+  }
+
+  @Scheduled(initialDelay = 1000L, fixedDelay = (1000L * 10L))
+  public void ping() {
+    List<SonicChannelPrototype> prototypes = new ArrayList<>(sonicConfig.getPoolSize());
+    int i = sonicChannelPrototypeQueue.drainTo(prototypes, sonicConfig.getPoolSize());
+    log.info("Drained {} from the pool to reconnect", i);
+
+    prototypes.forEach(SonicChannelPrototype::ping);
+    prototypes.forEach(this::returnInstance);
   }
 
   /**
    * Queries Sonic using one of the sonic channels in the connection pool. If no connections are
    * available this method will block until one becomes available
    */
-  void ingestAndConsolidate(String collection, String bucket, Iterable<KV> pairs)
-      throws InterruptedException {
+  void ingestAndConsolidate(String collection, String bucket, Iterable<KV> pairs) {
     SonicChannelPrototype take = null;
 
     try {
@@ -57,7 +69,7 @@ public class SonicBlockingObjectPool {
    * Queries Sonic using one of the sonic channels in the connection pool. If no connections are
    * available this method will block until one becomes available
    */
-  List<String> query(String collection, String bucket, String text) throws InterruptedException {
+  List<String> query(String collection, String bucket, String text) {
     SonicChannelPrototype take = null;
 
     try {
@@ -79,7 +91,7 @@ public class SonicBlockingObjectPool {
    * Queries Sonic using one of the sonic channels in the connection pool. If no connections are
    * available this method will block until one becomes available
    */
-  List<String> suggest(String collection, String bucket, String text) throws InterruptedException {
+  List<String> suggest(String collection, String bucket, String text) {
     SonicChannelPrototype take = null;
 
     try {
@@ -97,9 +109,14 @@ public class SonicBlockingObjectPool {
     }
   }
 
-  private void returnInstance(SonicChannelPrototype take) throws InterruptedException {
+  private void returnInstance(SonicChannelPrototype take) {
     if (take != null) {
-      sonicChannelPrototypeQueue.put(take);
+      try {
+        sonicChannelPrototypeQueue.put(take);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        returnInstance(take);
+      }
     } else {
       log.warn(
           "Failed to take a sonic instance from the pool, an exception is likely to be thrown");

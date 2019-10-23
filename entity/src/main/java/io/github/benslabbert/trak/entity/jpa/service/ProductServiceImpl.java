@@ -6,8 +6,11 @@ import io.github.benslabbert.trak.entity.jpa.Category;
 import io.github.benslabbert.trak.entity.jpa.Product;
 import io.github.benslabbert.trak.entity.jpa.Seller;
 import io.github.benslabbert.trak.entity.jpa.repo.ProductRepo;
+import io.github.benslabbert.trak.entity.rabbitmq.event.sonic.Collection;
+import io.github.benslabbert.trak.entity.rabbitmq.event.sonic.IngestEventFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -17,9 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 
 import static io.github.benslabbert.trak.core.cache.CacheNames.PRODUCT_CACHE;
+import static io.github.benslabbert.trak.core.rabbitmq.Queue.SONIC_INGEST_QUEUE;
 
 @Slf4j
 @Service
@@ -27,10 +32,11 @@ import static io.github.benslabbert.trak.core.cache.CacheNames.PRODUCT_CACHE;
 @RequiredArgsConstructor
 public class ProductServiceImpl extends RetryPersist<Product, Long> implements ProductService {
 
-  private final ProductRepo repo;
-  private final BrandService brandService;
-  private final SellerService sellerService;
   private final DistributedLockRegistry lockRegistry;
+  private final RabbitTemplate rabbitTemplate;
+  private final SellerService sellerService;
+  private final BrandService brandService;
+  private final ProductRepo repo;
 
   @Override
   @CacheEvict(value = PRODUCT_CACHE, allEntries = true)
@@ -47,8 +53,13 @@ public class ProductServiceImpl extends RetryPersist<Product, Long> implements P
     lock.lock();
 
     try {
-      Optional<Product> p = repo.findByPlIdEquals(product.getPlId());
-      return p.orElseGet(() -> retry(product, 1, repo));
+      Product p = repo.findByPlIdEquals(product.getPlId()).orElseGet(() -> retry(product, 1, repo));
+      log.info("Id {} Name {} to be ingested in Sonic", p.getId(), p.getName());
+      rabbitTemplate.convertAndSend(
+          SONIC_INGEST_QUEUE,
+          IngestEventFactory.createIngestEvent(
+              Collection.PRODUCT, p.getId().toString(), p.getName(), UUID.randomUUID().toString()));
+      return p;
     } finally {
       log.debug("Releasing lock: {}", lockKey);
       lock.unlock();

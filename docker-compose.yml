@@ -96,60 +96,6 @@ services:
       - rds
       - rabbit
 
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - http.cors.enabled=true
-      - http.cors.allow-origin=*
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=es"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - es-data:/usr/share/elasticsearch/data
-
-  es-slave-1:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.1
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - http.cors.enabled=true
-      - http.cors.allow-origin=*
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=es"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - es-data-slave-1:/usr/share/elasticsearch/data
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:6.4.1
-    restart: on-failure
-    ports:
-      - 5601:5601
-    volumes:
-      - kibana-data:/usr/share/kibana
-    environment:
-      SERVER_NAME: kibana.local
-      ELASTICSEARCH_URL: http://es:9200
-    depends_on:
-      - es
-
-  logstash:
-    build: ./logstash-conf/
-    image: benjaminslabbert/trak_logstash:1.0.2
-    ports:
-      - 9600:9600
-    restart: on-failure
-    depends_on:
-      - es
-
   ui:
     image: benjaminslabbert/trak_ui:1.0.2
     ports:
@@ -164,12 +110,6 @@ volumes:
   rabbit-data:
     driver: local
   rds-data:
-    driver: local
-  es-data:
-    driver: local
-  es-data-slave-1:
-    driver: local
-  kibana-data:
     driver: local
   redis-data:
     driver: local

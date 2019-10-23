@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -37,6 +38,7 @@ public class BiggestSavingsListenerTest {
   @Autowired private PriceRepo priceRepo;
 
   @Mock private DistributedLockRegistry lockRegistry;
+  @Mock private RabbitTemplate rabbitTemplate;
 
   private BiggestSavingsListener listener;
 
@@ -58,10 +60,11 @@ public class BiggestSavingsListenerTest {
         new BiggestSavingsListener(
             new BestSavingsServiceImpl(bestSavingsRepo),
             new ProductServiceImpl(
-                productRepo,
-                new BrandServiceImpl(brandRepo, lockRegistry),
+                lockRegistry,
+                rabbitTemplate,
                 new SellerServiceImpl(sellerRepo, lockRegistry),
-                lockRegistry),
+                new BrandServiceImpl(lockRegistry, rabbitTemplate, brandRepo),
+                productRepo),
             new PriceServiceImpl(priceRepo, lockRegistry));
   }
 

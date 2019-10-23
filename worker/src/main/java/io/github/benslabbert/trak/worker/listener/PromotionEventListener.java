@@ -35,9 +35,7 @@ import static io.github.benslabbert.trak.core.rabbitmq.Queue.PROMOTIONS_QUEUE;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RabbitListener(
-    queues = PROMOTIONS_QUEUE,
-    containerFactory = "customRabbitListenerContainerFactory")
+@RabbitListener(queues = PROMOTIONS_QUEUE)
 public class PromotionEventListener {
 
   private final PromotionEntityService promotionEntityService;
