@@ -8,6 +8,6 @@ public class PromotionTest {
 
   @Test
   public void test() {
-    assertEquals("Daily Deal", Promotion.DAILY_DEAL);
+    assertEquals("Daily Deals", Promotion.DAILY_DEAL);
   }
 }
