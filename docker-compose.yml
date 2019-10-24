@@ -1,115 +1,175 @@
-version: '2.4'
+version: "3.7"
 
 services:
 
-  rabbit:
-    image: rabbitmq:3.7.14-management-alpine
-    hostname: rabbit
+  ######################
+  #  TRAK Applications #
+  ######################
+
+  engine:
+    image: benjaminslabbert/trak_engine:1.0.4-2019-10-24
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - JAVA_OPTS=-Xmx64m -Xms64m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
+    depends_on:
+      - rds
+      - rabbit
+      - redis
+    labels:
+      - "description=Trak Engine, create jobs on Rabbit worker queue"
+    stop_grace_period: 1m30s
     restart: on-failure
-    mem_limit: 600m
+
+  worker:
+    image: benjaminslabbert/trak_worker:1.0.4-2019-10-24
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - JAVA_OPTS=-Xmx128m -Xms128m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
+    depends_on:
+      - rds
+      - rabbit
+      - redis
+    labels:
+      - "description=Trak Worker, processes events from RabbitMQ"
+    stop_grace_period: 1m30s
+    restart: on-failure
+
+  search:
+    image: benjaminslabbert/trak_search:1.0.4-2019-10-24
+    ports:
+      - 50052
+    environment:
+      - SONIC_HOST=sonic
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - JAVA_OPTS=-Xmx64m -Xms64m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
+    depends_on:
+      - redis
+    labels:
+      - "description=Trak Search, searches on Sonic"
+    stop_grace_period: 1m30s
+    restart: on-failure
+
+  api:
+    image: benjaminslabbert/trak_api:1.0.4-2019-10-23
+    environment:
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - JAVA_OPTS=-Xmx64m -Xms64m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
+    depends_on:
+      - rds
+      - rabbit
+      - redis
+    labels:
+      - "description=Trak API, API for UI service"
+    stop_grace_period: 1m30s
+    restart: on-failure
+
+  gateway:
+    image: benjaminslabbert/trak_gateway:1.0.1-2019-10-24_07-11-48
+    environment:
+      - API_GRPC_HOST=api:50051
+      - SEARCH_GRPC_HOST=search:50052
+    ports:
+      - 5000:5000
+    depends_on:
+      - search
+      - api
+    labels:
+      - "description=Trak Gateway, serving ReactJS"
+    stop_grace_period: 1m30s
+    restart: on-failure
+
+  #####################
+  # External Services #
+  #####################
+
+  sonic:
+    image: valeriansaliou/sonic:v1.2.3
+    ports:
+      - 1491:1491
+    volumes:
+      - sonic-data:/var/lib/sonic/store/
+      - ./sonic/sonic.cfg:/etc/sonic.cfg
+
+  rabbit:
+    image: rabbitmq:3.8.0-management-alpine
+    hostname: rabbit
     environment:
       - RABBITMQ_DEFAULT_USER=trak
       - RABBITMQ_DEFAULT_PASS=password
       - RABBITMQ_DEFAULT_VHOST=/
     ports:
-      - 5672:5672
       - 15672:15672
     volumes:
       - rabbit-data:/var/lib/rabbitmq
+    stop_grace_period: 1m30s
+    labels:
+      - "description=RabbitMQ Service"
 
   redis:
-    image: redis:5.0.4-alpine
-    restart: on-failure
-    ports:
-      - 6379:6379
-    mem_limit: 600m
+    image: redis:5.0.6-alpine
+    command: redis-server --requirepass password
+    stop_grace_period: 1m30s
     volumes:
       - redis-data:/data
+    labels:
+      - "description=Redis Service"
 
   rds:
-    image: mariadb:10.3.14
-    restart: on-failure
-    ports:
-      - 3306:3306
+    image: mariadb:10.4.8-bionic
     volumes:
       - rds-data:/var/lib/mysql
-    mem_limit: 600m
     environment:
       - MYSQL_ROOT_PASSWORD=my-secret-pw
       - MYSQL_DATABASE=trak
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
+    stop_grace_period: 1m30s
+    labels:
+      - "description=Maria DB Relational DB"
 
-  engine:
-    build: engine/
-    image: benjaminslabbert/trak_engine:1.0.2
-    restart: on-failure
-    mem_limit: 600m
-    environment:
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
-    depends_on:
-      - rds
-      - rabbit
+  ##############
+  # Monitoring #
+  ##############
 
-  worker:
-    build: worker/
-    image: benjaminslabbert/trak_worker:1.0.2
-    restart: on-failure
-    mem_limit: 600m
-    environment:
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
-    depends_on:
-      - rds
-      - rabbit
-      - engine
+  prometheus:
+    image: benjaminslabbert/trak_prometheus:1.0.4-1565000104
+    stop_grace_period: 1m30s
+    volumes:
+      - prometheus-data:/prometheus
+    labels:
+      - "description=Prometheus to collect metrics"
 
-  search:
-    build: search/
-    image: benjaminslabbert/trak_search:1.0.2
-    restart: on-failure
-    mem_limit: 250m
+  grafana:
+    image: grafana/grafana:6.4.3
     ports:
-      - 8081:8081
-      - 50052:50052
+      - 4000:3000
+    stop_grace_period: 1m30s
     environment:
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
-    depends_on:
-      - rds
-      - rabbit
-      - es
+      - "GF_SECURITY_ADMIN_PASSWORD=password"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    labels:
+      - "description=Grafana to display metrics"
 
-  api:
-    build: api/
-    image: benjaminslabbert/trak_api:1.0.2
+  portainer:
+    image: portainer/portainer:1.22.1
+    ports:
+      - 9000:9000
     restart: on-failure
-    mem_limit: 250m
-    ports:
-      - 8082:8082
-      - 50051:50051
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
-    depends_on:
-      - rds
-      - rabbit
+      - "admin-password=admin123"
 
-  ui:
-    image: benjaminslabbert/trak_ui:1.0.2
-    ports:
-      - 3000:3000
-    mem_limit: 250m
-    depends_on:
-      - search
-      - api
-
-# change to overlay2 driver
 volumes:
+  portainer_data:
+  prometheus-data:
+  grafana-data:
   rabbit-data:
-    driver: local
-  rds-data:
-    driver: local
   redis-data:
-    driver: local
+  rds-data:
+  sonic-data:

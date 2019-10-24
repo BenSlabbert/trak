@@ -7,7 +7,7 @@ services:
   ######################
 
   engine:
-    image: benjaminslabbert/trak_engine:1.0.4-2019-08-05
+    image: benjaminslabbert/trak_engine:1.0.4-2019-10-24
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -34,7 +34,7 @@ services:
         window: 120s
 
   worker:
-    image: benjaminslabbert/trak_worker:1.0.4-2019-08-05
+    image: benjaminslabbert/trak_worker:1.0.4-2019-10-24
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -61,7 +61,7 @@ services:
         window: 120s
 
   search:
-    image: benjaminslabbert/trak_search:1.0.4-2019-08-05
+    image: benjaminslabbert/trak_search:1.0.4-2019-10-24
     ports:
       - 50052
     environment:
@@ -90,7 +90,7 @@ services:
         window: 120s
 
   api:
-    image: benjaminslabbert/trak_api:1.0.4-2019-08-05
+    image: benjaminslabbert/trak_api:1.0.4-2019-10-23
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -118,7 +118,7 @@ services:
         window: 120s
 
   gateway:
-    image: benjaminslabbert/trak_gateway:1.0.1-1565008424
+    image: benjaminslabbert/trak_gateway:1.0.1-2019-10-24_07-11-48
     ports:
       - 5000:5000
     depends_on:
@@ -146,7 +146,7 @@ services:
   #####################
 
   rabbit:
-    image: rabbitmq:3.7.14-management-alpine
+    image: rabbitmq:3.8.0-management-alpine
     hostname: rabbit
     environment:
       - RABBITMQ_DEFAULT_USER=trak
@@ -174,7 +174,7 @@ services:
         window: 120s
 
   redis:
-    image: redis:5.0.4-alpine
+    image: redis:5.0.6-alpine
     networks:
       - backend
     stop_grace_period: 1m30s
@@ -195,7 +195,7 @@ services:
         window: 120s
 
   rds:
-    image: mariadb:10.3.14
+    image: mariadb:10.4.8-bionic
     volumes:
       - rds-data:/var/lib/mysql
     networks:
@@ -249,7 +249,7 @@ services:
         window: 120s
 
   grafana:
-    image:  grafana/grafana
+    image: grafana/grafana:6.4.3
     ports:
       - 4000:3000
     stop_grace_period: 1m30s
@@ -274,7 +274,7 @@ services:
         window: 120s
 
   agent:
-    image: portainer/agent
+    image: portainer/agent:1.5.1
     environment:
       # REQUIRED: Should be equal to the service name prefixed by "tasks." when
       # deployed inside an overlay network
@@ -300,7 +300,7 @@ services:
         constraints: [node.platform.os == linux]
 
   portainer:
-    image: portainer/portainer
+    image: portainer/portainer:1.22.1
     ports:
       - 9000:9000
     command: -H tcp://tasks.agent:9001 --tlsskipverify
