@@ -11,7 +11,7 @@ services:
     environment:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
-      - JAVA_OPTS=-Xmx64m -Xms64m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
+      - JAVA_OPTS=-Xmx32m -Xms32m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify
     depends_on:
       - rds
       - rabbit
@@ -91,7 +91,7 @@ services:
     ports:
       - 1491:1491
     volumes:
-      - sonic-data:/var/lib/sonic/store/
+      - sonic-data:/usr/src/sonic
       - ./sonic/sonic.cfg:/etc/sonic.cfg
 
   rabbit:
