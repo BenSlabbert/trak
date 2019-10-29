@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine-deployment
+  namespace: trak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: engine
+  template:
+    metadata:
+      labels:
+        component: engine
+    spec:
+      containers:
+        - name: engine
+          image: benjaminslabbert/trak_engine:1.0.4-2019-10-24
+          env:
+            - name: JAVA_OPTS
+              value: "-Xmx64m -Xms64m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify"
+            - name: TOMCAT_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: TOMCAT_PORT
+                  name: engine-secrets
+            - name: RABBIT_MQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_USERNAME
+                  name: engine-secrets
+            - name: RABBIT_MQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_PASSWORD
+                  name: engine-secrets
+            - name: RABBIT_MQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_HOST
+                  name: engine-secrets
+            - name: RABBIT_MQ_VIRTUAL_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_VIRTUAL_HOST
+                  name: engine-secrets
+            - name: RABBIT_MQ_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_PORT
+                  name: engine-secrets
+            - name: RABBIT_MQ_CONCURRENCY
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_CONCURRENCY
+                  name: engine-secrets
+            - name: RABBIT_MQ_MAX_CONCURRENCY
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_MAX_CONCURRENCY
+                  name: engine-secrets
+            - name: RABBIT_MQ_PREFETCH
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_PREFETCH
+                  name: engine-secrets
+            - name: RABBIT_MQ_RETRY_MAX_ATTEMPTS
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_RETRY_MAX_ATTEMPTS
+                  name: engine-secrets
+            - name: RABBIT_MQ_RETRY_ENABLE
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_RETRY_ENABLE
+                  name: engine-secrets
+            - name: RABBIT_MQ_RETRY_INTERVAL
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_MQ_RETRY_INTERVAL
+                  name: engine-secrets
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_HOST
+                  name: engine-secrets
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_PORT
+                  name: engine-secrets
+            - name: REDIS_USE_SSL
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_USE_SSL
+                  name: engine-secrets
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_PASSWORD
+                  name: engine-secrets
+            - name: MARIADB_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: MARIADB_HOST
+                  name: engine-secrets
+            - name: MARIADB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: MARIADB_USERNAME
+                  name: engine-secrets
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: MARIADB_PASSWORD
+                  name: engine-secrets
+            - name: CACHE_DURATION_SECONDS
+              valueFrom:
+                secretKeyRef:
+                  key: CACHE_DURATION_SECONDS
+                  name: engine-secrets

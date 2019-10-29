@@ -21,10 +21,10 @@ spring:
 
 logging:
   level:
-    com.github.twohou.sonic: DEBUG
+    com.github.twohou.sonic: ${SONIC_COMMS_LOG_LEVEL:DEBUG}
 
 sonic:
-  host: ${SONIC_HOST:127.0.0.1}
+  host: ${SONIC_HOST:sonic}
   port: ${SONIC_PORT:1491}
   password: ${SONIC_PASSWORD:passwd}
   pool:

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbit-deployment
+  namespace: trak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: rabbit
+  template:
+    metadata:
+      labels:
+        component: rabbit
+    spec:
+      volumes:
+        - name: rabbit-storage
+          persistentVolumeClaim:
+            claimName: rabbit-persistent-volume-claim
+      containers:
+        - name: rabbit
+          image: rabbitmq:3.8.0-management-alpine
+          ports:
+            - containerPort: 15672
+              name: management
+            - containerPort: 5672
+              name: amqp
+          volumeMounts:
+            - name: rabbit-storage
+              mountPath: /var/lib/rabbitmq
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit-secrets
+                  key: RABBITMQ_DEFAULT_USER
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit-secrets
+                  key: RABBITMQ_DEFAULT_PASS
+            - name: RABBITMQ_DEFAULT_VHOST
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit-secrets
+                  key: RABBITMQ_DEFAULT_VHOST

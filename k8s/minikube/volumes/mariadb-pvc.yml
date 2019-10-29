@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-persistent-volume-claim
+  namespace: trak
+spec:
+  accessModes:
+    - ReadWriteOnce # only used by a single node
+  resources:
+    requests:
+      storage: 2Gi

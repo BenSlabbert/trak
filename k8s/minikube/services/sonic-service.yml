@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonic-ip-service
+  namespace: trak
+spec:
+  type: ClusterIP
+  selector:
+    component: sonic
+  ports:
+    - port: 1491
+      targetPort: 1491

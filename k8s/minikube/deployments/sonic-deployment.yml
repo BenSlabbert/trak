@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonic-deployment
+  namespace: trak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: sonic
+  template:
+    metadata:
+      labels:
+        component: sonic
+    spec:
+      volumes:
+        - name: sonic-storage
+          persistentVolumeClaim:
+            claimName: sonic-persistent-volume-claim
+      containers:
+        - name: sonic
+          image: benjaminslabbert/trak_sonic:1.0.0
+          ports:
+            - containerPort: 1491
+          volumeMounts:
+            - name: sonic-storage
+              mountPath: /usr/src/sonic
+          env:
+            - name: SONIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: SONIC_PASSWORD
+                  name: sonic-secrets

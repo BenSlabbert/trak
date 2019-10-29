@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: ${TOMCAT_PORT:8083}
 spring:
   config:
     name: trak-engine

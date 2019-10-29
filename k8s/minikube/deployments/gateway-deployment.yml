@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-deployment
+  namespace: trak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: gateway
+  template:
+    metadata:
+      labels:
+        component: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: benjaminslabbert/trak_gateway:1.0.1-2019-10-24_07-11-48
+          ports:
+            - containerPort: 5000
+          env:
+            - name: PROFILE
+              valueFrom:
+                secretKeyRef:
+                  key: PROFILE
+                  name: gateway-secrets
+            - name: API_GRPC_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: API_GRPC_HOST
+                  name: gateway-secrets
+            - name: SEARCH_GRPC_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: SEARCH_GRPC_HOST
+                  name: gateway-secrets

@@ -72,6 +72,7 @@ services:
     environment:
       - API_GRPC_HOST=api:50051
       - SEARCH_GRPC_HOST=search:50052
+      - PROFILE=DOCKER
     ports:
       - 5000:5000
     depends_on:
