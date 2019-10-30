@@ -35,6 +35,9 @@ spring:
 cache:
   duration: ${CACHE_DURATION_SECONDS:300}
 
+api:
+  host: ${API_HOST:127.0.0.1}
+
 management:
   endpoints:
     web:
