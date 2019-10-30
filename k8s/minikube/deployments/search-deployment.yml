@@ -16,6 +16,7 @@ spec:
       containers:
         - name: search
           image: benjaminslabbert/trak_search:1.0.4-2019-10-24
+          imagePullPolicy: Always
           ports:
             - containerPort: 50052
               name: grpc

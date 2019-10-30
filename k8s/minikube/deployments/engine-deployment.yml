@@ -16,6 +16,7 @@ spec:
       containers:
         - name: engine
           image: benjaminslabbert/trak_engine:1.0.4-2019-10-24
+          imagePullPolicy: Always
           env:
             - name: JAVA_OPTS
               value: "-Xmx64m -Xms64m -XX:+TieredCompilation -Xss256k -Xverify:none -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+CMSClassUnloadingEnabled -XshowSettings:vm -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics -XX:+HeapDumpOnOutOfMemoryError -noverify"

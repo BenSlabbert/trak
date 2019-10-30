@@ -20,6 +20,7 @@ spec:
       containers:
         - name: rabbit
           image: rabbitmq:3.8.0-management-alpine
+          imagePullPolicy: Always
           ports:
             - containerPort: 15672
               name: management

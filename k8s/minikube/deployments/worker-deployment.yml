@@ -16,6 +16,7 @@ spec:
       containers:
         - name: worker
           image: benjaminslabbert/trak_worker:1.0.4-2019-10-24
+          imagePullPolicy: Always
           ports:
             - containerPort: 8082
               name: health

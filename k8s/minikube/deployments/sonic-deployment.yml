@@ -20,6 +20,7 @@ spec:
       containers:
         - name: sonic
           image: benjaminslabbert/trak_sonic:1.0.0
+          imagePullPolicy: Always
           ports:
             - containerPort: 1491
           volumeMounts:

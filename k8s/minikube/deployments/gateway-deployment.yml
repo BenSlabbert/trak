@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: benjaminslabbert/trak_gateway:1.0.1-2019-10-24_07-11-48
+          image: benjaminslabbert/trak_gateway:1.0.1-2019-10-30_06-42-55
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
           env:
